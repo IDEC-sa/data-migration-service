@@ -50,18 +50,19 @@ def createProdsFromQuoteRequest(quoteReqeust:QuoteRequest):
     print(df)
     prods = df.to_dict('records')
     prodList = ProductList(quoteRequest=quoteReqeust)
+    prodLines = []
     try:
         with transaction.atomic():
             prodList.save()
             for prod in prods:
-                actualInternalProd = Product.objects.get(internalCode=prod["internalcode"])
+                actualInternalProd = Product.objects.filter(internalCode=prod["internalcode"]).first()
                 productLine = ProductLine(product = actualInternalProd, lineItem = prod["lineitem"], 
                                         quantity=prod["qty"], unitPrice=prod["unitprice"])
                 if re.match(str(prod["totalprice"]).lower().strip(), r"option"):
                     productLine.optional = True
                 productLine.productList = prodList
-                productLine.save()
-            prodList.save()
+                prodLines.append(productLine)
+            ProductLine.objects.bulk_create(prodLines)
             quoteReqeust.productsAdded = True
             quoteReqeust.save()
     except exceptions.ObjectDoesNotExist as e:

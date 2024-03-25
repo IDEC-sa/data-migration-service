@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 import pandas as pd
 from django.urls import reverse
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MinLengthValidator
 import magic
 from django.core import exceptions
 from datetime import datetime
@@ -21,17 +21,44 @@ def validate_file_mimetype(file):
 
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
-    quotationReference = models.TextField(max_length = 100, blank = False, null = False)
+    quotationReference = models.CharField(max_length = 100, blank = True, null = False)
     date = models.DateField(blank = False, null = False)
-    projectName = models.TextField(blank = False, null = False)
-    scopeOfWork =  models.TextField(blank = False, null = False)
-    quotationValidity = models.TextField(blank = False, null = False)
-    deliveryTime = models.TextField(blank = False, null = False)
-    deliveryAddress = models.TextField(blank = False, null = False)
-    termsOfPayment = models.TextField(blank = False, null = False)
-    warranty = models.TextField(blank = False, null = False)
-    General = models.TextField(blank = False, null = False)
-    contractReference = models.TextField(max_length = 50, null = False, blank = False)
+    projectName = models.CharField(blank = False, null = False, max_length = 100, 
+                                   validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    scopeOfWork =  models.CharField(blank = False, null = False, max_length = 100,
+                                    validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    quotationValidity = models.CharField(blank = False, null = False, max_length = 100,
+                                         validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    deliveryTime = models.CharField(blank = False, null = False, max_length = 100,
+                                    validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    deliveryAddress = models.CharField(blank = False, null = False, max_length = 100,
+                                       validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    termsOfPayment = models.CharField(blank = False, null = False, max_length = 100, 
+                                      validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    warranty = models.CharField(blank = False, null = False, max_length = 100,
+                                validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    General = models.CharField(blank = False, null = False, max_length = 100,
+                               validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
+    contractReference = models.CharField(max_length = 50, null = False, blank = False,
+                                         validators=[
+            MinLengthValidator(5, 'the field must contain at least 5 characters')
+            ])
     contract = models.FileField()
 
 class QuoteRequest(models.Model):
@@ -90,7 +117,7 @@ class QuoteRequest(models.Model):
 class Product(models.Model):
     name = models.TextField(null = False, blank = False)
     internalCode = models.TextField(null = False, blank = False)
-    odooRef = models.TextField(null = False, blank = False)
+    odooRef = models.TextField(null = False, blank = False, unique = True)
 
 class ProductList(models.Model):
     quoteRequest = models.OneToOneField(QuoteRequest, on_delete = models.CASCADE, related_name = "productList")
