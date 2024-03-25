@@ -1,0 +1,29 @@
+{% extends "base_template.html"%}
+{% block content %}
+    <div class="inner cover">   
+        <div class="table-responsive">
+            <table class=" table table-bordered table-hover ">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>priceUnit</th>
+                    <th>state</th>
+                    <th>date created</th>
+                    <th>link</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for object in object_list %}
+                  <tr class="{% if object.state == 'nval' %} table-warning {% elif object.state == 'dra' %} table-secondary {% elif object.state == 'val' %} table-info {% elif object.state == 'app' %} table-success {% elif object.state == 'napp' %} table-danger   {% endif %} ">
+                    <td>{{ object.id }}</td>
+                    <td>{{ object.get_priceUnit_display }}</td>
+                    <td>{{ object.get_state_display }}</td>
+                    <td>{{ object.date_created }}</td>
+                    <td><a class="btn btn-primary" href="{{ object.getSelfUrl }}">visit</a></td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+        </div>
+    </div>
+{% endblock %}

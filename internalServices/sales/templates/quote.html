@@ -1,0 +1,109 @@
+{% extends "base_template.html"%}
+{% load df_conversions_tags %}
+{% block content %} 
+<div class=" mb-4">
+    
+   
+    <ul class="nav">
+        <li class="nav-item">
+            {% for k, v in object.states.items %}
+                {% if object.state == k %}
+                <span  class="badge">{{v}}</span> >>
+                {% else %}
+                <span style="opacity: .1;" class="badge">{{v}}</span> >>
+                {% endif %}
+            {% endfor %}
+        </li>
+    </ul>     
+    {{ object.isProductCreated }}
+    <div class="btns" style="text-align: left; margin-bottom: 20;"> 
+    <p style="display: inline;">Actions: </p>
+    {% if object.state in "quo"%}
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <a href="{% url 'validate-quote' object.id %}" type="button" style="margin: 10px;"  class="btn btn-secondary">Validate</a>
+        </div> 
+    {% endif %}
+    {% if object.state in "dra" and not object.productsAdded %}
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <a   style="margin: 10px;" class="btn btn-secondary">Create products</a>
+      </div>
+    {% endif %}
+    {% if object.state in "dra" and not object.isReady %}
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <a type="button" href="{{ object.getCreateStaticUrl }}" style="margin: 10px;" class="btn btn-secondary">Add static data</a>
+        </div>
+    {% endif %}
+    {% if  object.state not in "dra" %}
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <a href="{% url 'draften-quote' object.id %}" type="button" style="margin: 10px;" class="btn btn-secondary">Mark as draft</a>
+      </div>
+    {% endif %}
+    </div>
+        <div style="margin-bottom: 30pt;">
+            <div class="container">
+                <div class = "modal-body row" style="margin-bottom: 3rem;">
+                    <div class="col-md-6">
+                        <div class="card" style="width: 18rem;">
+                            <ul class="list-group list-group-flush">
+                            <li class="list-group-item">price unit: {{ object.get_priceUnit_display }}</li>
+                            <li class="list-group-item">quoteRef: {{ object.static_data.quotationReference }}</li>
+                            <li class="list-group-item">Date: {{object.static_data.date}}</li>
+                            <li class="list-group-item">projectName: {{object.static_data.projectName}}</li>
+                            <li class="list-group-item">scopeOfWork: {{object.static_data.scopeOfWork}}</li>
+                            <li class="list-group-item">quotationValidity: {{object.static_data.quotationValidity}}</li>
+                            </ul>
+                        </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card" style="width: 18rem;">
+                        <ul class="list-group list-group-flush">    
+                        <li class="list-group-item">deliveryTime: {{object.static_data.deliveryTime}}</li>
+                        <li class="list-group-item">deliveryAddress: {{object.static_data.deliveryAddress}}</li>
+                        <li class="list-group-item">termsOfPayment: {{object.static_data.termsOfPayment}}</li>
+                        <li class="list-group-item">warranty: {{object.static_data.warranty}}</li>
+                        <li class="list-group-item">General: {{object.static_data.General}}</li>
+                        <li class="list-group-item">contractReference: {{object.static_data.contractReference}}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card" style="margin-top: 3rem; width: 18rem;">
+                        <ul class="list-group list-group-flush">    
+                        <li class="list-group-item">Discount: {{object.discount}}</li>
+                        <li class="list-group-item">Delivery and installation: {{object.deliveryAndInstallation}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if object.df is not None %}
+        <h2>Products</h2>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                  <th scope="col">Product Name</th>
+                  <th scope="col">quantity</th>
+                  <th scope="col">unit price</th>
+                  <th scope="col">internal code</th>
+                  <th scope="col">state</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for prodLine in object.productList.productLines.all %}
+                <tr>
+                  <td>{{ prodLine.product.name }}</td>
+                  <td>{{ prodLine.quantity }}</td>
+                  <td>{{ prodLine.unitPrice }}</td>
+                  <td>{{ prodLine.product.internalCode}}</td>
+                  {% if prodLine.optional %}
+                  <td><span class="badge  bg-secondary rounded-pill d-inline">Optional</span></td>
+                  {% else %}
+                  <td><span class="badge  bg-success rounded-pill d-inline">Mandatory</span></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+        </table>
+        {% endif %} 
+        </div>
+        {% endblock %}

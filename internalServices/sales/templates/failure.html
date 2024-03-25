@@ -1,0 +1,11 @@
+{% load static %}
+{% load df_conversions_tags %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<link rel="stylesheet" href="{% static 'app.css' %}">
+{% block content %}
+{% for err in errors %}
+    <h3>{{ err }}</h3>
+{% endfor %%}
+<a href={{ review_url }}>back to quote</a>
+{% endblock %}

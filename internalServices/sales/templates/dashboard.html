@@ -1,0 +1,89 @@
+{% extends "base_template.html"%}
+
+{% block content %}
+<main role="main" class="inner cover">
+    <div class="jumbotron">
+        <div class="container">
+          <h1 class="display-3">Odoo Sales module</h1>
+          <p>Here you can add a quote, review it and wait for its validation, by only uploading your quote excel file !!</p>
+          <p><a class="btn btn-primary btn-lg" href="{% url 'uploader' %}" role="button">Add a Quote</a></p>
+        </div>
+      </div>
+    <div class="container">
+        <!-- Example row of columns -->
+        <div class="row row-cols-1 row-cols-md-3 g-4 mt-1">
+            <div class="col">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <h5 class="card-title">View all Quotes</h5>
+                    </div>
+                    <div class="card-footer ">
+                        <a href="{% url 'all-quotes' %}" class="btn btn-light ">View</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 bg-secondary">
+                    <div class="card-body">
+                    <h5 class="card-title">View Drafted Quotes</h5>
+                    </div>
+                    <div class="card-footer ">
+                        <a href="{% url 'draft-quotes' %}" class="btn btn-light ">View</a>
+                    </div>
+                </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 bg-success">
+                        <div class="card-body">
+                        <h5 class="card-title">View in process Quotes</h5>
+                        </div>
+                        <div class="card-footer ">
+                            <a href="{% url 'in-process-quotes' %}" class="btn btn-light ">View</a>
+                        </div>
+                    </div>
+                    </div>
+                <!-- <div class="col">
+                <div class="card h-100 bg-secondary text-white">
+                    <div class="card-body">
+                    <h5 class="card-title ">View Drafted quotes</h5>
+                    </div>
+                    <div class="card-footer ">
+                        <a href="#" class="btn btn-light ">View</a>
+                    </div>
+                </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 bg-info">
+                        <div class="card-body">
+                        <h5 class="card-title">View approved quotes quotes</h5>
+                        </div>
+                        <div class="card-footer ">
+                            <a href="#" class="btn btn-light ">View</a>
+                        </div>
+                    </div>
+                    </div>
+                <div class="col">
+                    <div class="card h-100 bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">view accepted quotes</h5>
+                    </div>
+                    <div class="card-footer ">
+                        <a href="#" class="btn btn-light ">View</a>
+                    </div>
+                    </div>
+                </div>
+            <div class="col">
+                <div class="card h-100 bg-danger text-white">
+                  <div class="card-body">
+                    <h5 class="card-title">view not approved quotes</h5>
+                  </div>
+                  <div class="card-footer ">
+                    <a href="#" class="btn btn-light ">View</a>
+                </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+  </main>
+{% endblock %}

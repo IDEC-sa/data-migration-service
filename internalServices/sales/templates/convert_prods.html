@@ -1,0 +1,24 @@
+{% extends "base_template.html" %}
+{% load df_conversions_tags %}
+{% block content %} 
+<div class="custom-file mb-4">
+    <div class="header">
+        <h1>your uploaded data</h1>
+    </div>
+    {% if table_data is not None %}
+    <table class = "table">
+        <thead>
+            {{table_data | convert_data_frame_to_html_table_headers | safe}}
+        </thead>
+        <tbody>
+            {{table_data | convert_data_frame_to_html_table_rows | safe}}
+        </tbody>
+    </table>   
+    {% endif %}   
+        <div>
+            <div align="center">
+            <a href="{{ create_url }}"  class="button" value="Submit">Confirm data</a>
+            </div>
+        </div>
+</div>
+{% endblock %}  
