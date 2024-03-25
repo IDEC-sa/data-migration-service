@@ -1,0 +1,31 @@
+{% extends "base_template.html"%}
+{% block content %}
+<div class=" mb-4">
+    <div class="header">
+        <h1>complete quote data</h1>
+    </div>
+    <form id="example-form1" method="post" enctype="multipart/form-data">{% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3 text-center">
+            {{ field.label_tag }}
+            {{ field }}  
+            <br>    
+            {% if field.help_text %}  
+            <small style=" ">{{ field.help_text }}</small>  
+            {% endif %}  
+            {% for error in field.errors %}  
+            <p class="text-danger">{{ error }}</p>  
+            {% endfor %} 
+            </div>
+        {% endfor %}
+        <!--  -->
+                <!-- <input type="file" class="custom-file-input" id="customFile" name="csv" required accept=".csv" size="60"> -->
+        <!-- </label> -->
+    <div>
+        <div align="center">
+            <input type="submit" class="button" value="Submit">
+        </div>
+    </div>
+    </form>
+</div>
+{% endblock %}

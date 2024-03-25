@@ -90,6 +90,7 @@ class QuoteRequest(models.Model):
 class Product(models.Model):
     name = models.TextField(null = False, blank = False)
     internalCode = models.TextField(null = False, blank = False)
+    odooRef = models.TextField(null = False, blank = False)
 
 class ProductList(models.Model):
     quoteRequest = models.OneToOneField(QuoteRequest, on_delete = models.CASCADE, related_name = "productList")

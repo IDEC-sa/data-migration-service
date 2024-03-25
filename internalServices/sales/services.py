@@ -5,6 +5,7 @@ from .models import QuoteRequest, Product, ProductLine, ProductList
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.core import exceptions
+
 def convert_ranged(start_r, num_rows, columns_list, df):
     end_r = start_r + num_rows
     finDf1 = df.iloc[start_r:end_r, columns_list:].reset_index(drop=True)
@@ -82,3 +83,22 @@ def draften(quoteReq:QuoteRequest):
         quoteReq.save()
     else:
         raise excep.BadRequest("The requested quote can't me marked as draft")
+
+
+def create_prods(excel):
+    productsDf = pd.read_excel(excel)
+    productsDf.loc[:, "internalCode"][productsDf["internalCode"].isna()] = "notSpecified"
+    prdouctsDict = productsDf.to_dict('records')
+    print(prdouctsDict)
+    errors = []
+    prods = []
+    try:
+        for prod in prdouctsDict:
+            with transaction.atomic():
+                newProd = Product(**prod)
+                prods.append(newProd)
+        Product.objects.bulk_create(prods)
+    except Exception as e:
+        errors.append(f"error {e} happened during the creation process of product number {prod['internalCode']}")
+    return errors
+      

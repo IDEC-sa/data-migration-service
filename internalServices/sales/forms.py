@@ -23,7 +23,6 @@ class UploadForm(forms.ModelForm):
                             help_text="this is a sample help text", 
                             widget=forms.FileInput(attrs={
                                 'accept':'.xlsx',
-                                'class':'asjkda'
                             }))
     
     class Meta:
@@ -54,3 +53,12 @@ class StaticDataForm(forms.ModelForm):
     class Meta:
         model = StaticData
         fields = "__all__"
+
+
+
+class ProductsForm(forms.Form):
+    products = forms.FileField(validators=[ext_validator, validate_file_mimetype], 
+                            help_text="this is a sample help text", 
+                            widget=forms.FileInput(attrs={
+                                'accept':'.xlsx',
+                            }))
