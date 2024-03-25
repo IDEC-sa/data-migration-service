@@ -39,7 +39,7 @@ class ReviewProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissio
     template_name = 'convert_prods.html'
 
     def get_object(self):
-        get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
+        return get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
 
     def get_context_data(self, **kwargs) -> dict[str, ]:
         print(self.request.user)
@@ -62,7 +62,7 @@ class CreateProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissio
         return self.request.user == quoteRequest.user
     
     def get_object(self):
-        get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
+        return get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
 
     def get(self, request, *args, **kwargs):
         quoteRequest = QuoteRequest.objects.get(pk = self.kwargs["quoteId"])
