@@ -21,17 +21,17 @@ def validate_file_mimetype(file):
 
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
-    quotationReference = models.CharField(max_length = 100, blank = False, null = False)
+    quotationReference = models.TextField(max_length = 100, blank = False, null = False)
     date = models.DateField(blank = False, null = False)
-    projectName = models.CharField(blank = False, null = False)
-    scopeOfWork =  models.CharField(blank = False, null = False)
-    quotationValidity = models.CharField(blank = False, null = False)
-    deliveryTime = models.CharField(blank = False, null = False)
-    deliveryAddress = models.CharField(blank = False, null = False)
-    termsOfPayment = models.CharField(blank = False, null = False)
-    warranty = models.CharField(blank = False, null = False)
-    General = models.CharField(blank = False, null = False)
-    contractReference = models.CharField(max_length = 50, null = False, blank = False)
+    projectName = models.TextField(blank = False, null = False)
+    scopeOfWork =  models.TextField(blank = False, null = False)
+    quotationValidity = models.TextField(blank = False, null = False)
+    deliveryTime = models.TextField(blank = False, null = False)
+    deliveryAddress = models.TextField(blank = False, null = False)
+    termsOfPayment = models.TextField(blank = False, null = False)
+    warranty = models.TextField(blank = False, null = False)
+    General = models.TextField(blank = False, null = False)
+    contractReference = models.TextField(max_length = 50, null = False, blank = False)
     contract = models.FileField()
 
 class QuoteRequest(models.Model):
@@ -48,7 +48,7 @@ class QuoteRequest(models.Model):
         "napp": _("Not Approved"),
     }
 
-    priceUnit = models.CharField(choices = units)
+    priceUnit = models.CharField(choices = units, max_length=3)
     excel = models.FileField(validators=[ext_validator])
     user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, blank = False)
     state = models.CharField(choices = states, max_length=4, default = "dra")
