@@ -4,3 +4,4 @@
 *.env
 migrations
 settings.py
+env
