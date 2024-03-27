@@ -23,11 +23,14 @@ def convert_xlsx(excel):
     return prds_only
 
 def validate_prods(excel):
-    df = pd.read_excel(excel)
+    df = pd.read_excel(excel, header=None)
+    print(df.head())
     requiredd_cols = ["lineitem", "qty", "unitprice", "totalprice", "internalcode"]
-    start = df.iloc[:, 0] == "start"
-    if start.sum() == 0:
+    start = df.iloc[:, 0] == "start"    
+    print(start.any())    
+    if start.sum() == 0 and not start.any():
         raise excep.ValidationError("please specify the products table with the start key word")
+
     to_start = (df.iloc[:, 0] == "start").argmax() + 1
     prods = convert_ranged(to_start, 70, 1, df)
     cols = set(prods.columns[:])
