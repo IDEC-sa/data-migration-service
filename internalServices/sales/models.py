@@ -13,20 +13,6 @@ User = settings.AUTH_USER_MODEL
 excel_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
 pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid excel file")
 
-# def validate_file_mimetype(file):
-#     accept = ["application/vnd.ms-excel"]
-#     file_mime_type = magic.from_buffer(file.read(1024), mime = True)
-#     print(file_mime_type)
-#     if file_mime_type != "application/vnd.ms-excel":
-#         raise exceptions.ValidationError("unsupported file type")
-
-# def validate_file_mimetype2(file):
-#     accept = ["application/pdf"]
-#     file_mime_type = magic.from_buffer(file.read(1024), mime = True)
-#     print(file_mime_type)
-#     if file_mime_type not in accept:
-#         raise exceptions.ValidationError("unsupported file type")
-
 class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
     latin_name = models.CharField(blank = False, null = False, max_length = 200)
