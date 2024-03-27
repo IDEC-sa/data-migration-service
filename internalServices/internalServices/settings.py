@@ -28,7 +28,8 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
+
 
 # Application definition
 
@@ -88,8 +89,11 @@ DATABASES = {
         # 'PASSWORD': 'your_db_password',
         'HOST': '127.0.0.1', 
         'PORT': '5432',
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "mydatabase",
     }
 }
+
 
 
 # Password validation
