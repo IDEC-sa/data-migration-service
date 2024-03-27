@@ -10,14 +10,27 @@ from datetime import datetime
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 
-ext_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
+excel_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
+pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid excel file")
 
-def validate_file_mimetype(file):
-    accept = ["application/vnd.ms-excel"]
-    file_mime_type = magic.from_buffer(file.read(1024), mime = True)
-    print(file_mime_type)
-    if file_mime_type != "application/vnd.ms-excel":
-        raise exceptions.ValidationError("unsupported file type")
+# def validate_file_mimetype(file):
+#     accept = ["application/vnd.ms-excel"]
+#     file_mime_type = magic.from_buffer(file.read(1024), mime = True)
+#     print(file_mime_type)
+#     if file_mime_type != "application/vnd.ms-excel":
+#         raise exceptions.ValidationError("unsupported file type")
+
+# def validate_file_mimetype2(file):
+#     accept = ["application/pdf"]
+#     file_mime_type = magic.from_buffer(file.read(1024), mime = True)
+#     print(file_mime_type)
+#     if file_mime_type not in accept:
+#         raise exceptions.ValidationError("unsupported file type")
+
+class Company(models.Model):
+    arabic_name = models.CharField(blank = False, null = False, max_length = 200)
+    latin_name = models.CharField(blank = False, null = False, max_length = 200)
+    code = models.CharField(blank = False, null = False, max_length = 200)
 
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
@@ -59,7 +72,7 @@ class StaticData(models.Model):
                                          validators=[
             MinLengthValidator(5, 'the field must contain at least 5 characters')
             ])
-    contract = models.FileField()
+    contract = models.FileField(validators=[pdf_validator])
 
 class QuoteRequest(models.Model):
 
@@ -76,7 +89,7 @@ class QuoteRequest(models.Model):
     }
 
     priceUnit = models.CharField(choices = units, max_length=3)
-    excel = models.FileField(validators=[ext_validator])
+    excel = models.FileField(validators=[excel_validator])
     user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, blank = False)
     state = models.CharField(choices = states, max_length=4, default = "dra")
     date_created = models.DateTimeField(blank = False, default=datetime.now)
@@ -84,6 +97,7 @@ class QuoteRequest(models.Model):
     deliveryAndInstallation = models.FloatField(null = False, default = 0)
     static_data = models.OneToOneField(StaticData, on_delete = models.CASCADE, null = True, blank = False)
     productsAdded = models.BooleanField(default = False)
+    company = models.ForeignKey(Company, on_delete = models.DO_NOTHING, null = True, blank = True)
 
     def df(self):
         return pd.read_excel(self.excel)

@@ -1,9 +1,8 @@
 import re
 import pandas as pd
 import django.core.exceptions as excep
-from .models import QuoteRequest, Product, ProductLine, ProductList
+from .models import QuoteRequest, Product, ProductLine, ProductList, Company
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.core import exceptions
 
 def convert_ranged(start_r, num_rows, columns_list, df):
@@ -41,8 +40,6 @@ def validate_prods(excel):
         raise excep.ValidationError(errors)
     return prods
 
-# put the opt
-
 @transaction.atomic
 def createProdsFromQuoteRequest(quoteReqeust:QuoteRequest):
     errors = []
@@ -68,7 +65,10 @@ def createProdsFromQuoteRequest(quoteReqeust:QuoteRequest):
     except exceptions.ObjectDoesNotExist as e:
         errors.append(f"product in line number {prod['lineitem']} and internal code {prod['internalcode']} doesn't exist in the database. please check your internal code thouroghly or contact with the admin")
     except Exception as e:
-        errors.append(f"error {e} happened during the creation process of product number {prod['internalcode']}")
+        if prod:
+            errors.append(f"error {e} happened during the creation process of product number {prod['internalcode']}.")
+        else:
+            errors.append(f"error {e} happened.")
     return errors
 
 def validate(quoteReq:QuoteRequest):
@@ -100,6 +100,30 @@ def create_prods(excel):
                 prods.append(newProd)
         Product.objects.bulk_create(prods)
     except Exception as e:
-        errors.append(f"error {e} happened during the creation process of product number {prod['internalCode']}")
+        if prod:
+            errors.append(f"error {e} happened during the creation process of product number {prod['internalCode']}")
+        else:
+            errors.append(f"error {e} happened")
+
+    return errors
+
+def create_comps(excel):
+    compsDf = pd.read_excel(excel)
+    compsDf.loc[:, "code"][compsDf["code"].isna()] = "notSpecified"
+    compsDf = compsDf.to_dict('records')
+    print(compsDf)
+    errors = []
+    comps = []
+    try:
+        for com in compsDf:
+            with transaction.atomic():
+                newCom = Company(**com)
+                comps.append(newCom)
+        Company.objects.bulk_create(comps)
+    except Exception as e:
+        if com:
+            errors.append(f"error {e} happened during the creation process of product number {com['internalCode']}")
+        else:
+            errors.append(f"error {e} happened")
     return errors
       

@@ -8,16 +8,32 @@
                     <th>#</th>
                     <th>priceUnit</th>
                     <th>state</th>
+                    <th>Company</th>
+                    <th>project name</th>
+                    <th>quote ref</th>
                     <th>date created</th>
                     <th>link</th>
                   </tr>
                 </thead>
                 <tbody>
                 {% for object in object_list %}
-                  <tr class="{% if object.state == 'nval' %} table-warning {% elif object.state == 'dra' %} table-secondary {% elif object.state == 'val' %} table-info {% elif object.state == 'app' %} table-success {% elif object.state == 'napp' %} table-danger   {% endif %} ">
+                  <tr class="{% if object.state == 'nval' %} table-warning {% elif object.state == 'dra' %} table-secondary {% elif object.state == 'val' %} table-info {% elif object.state == 'app' %} table-success {% elif object.state == 'napp' %} table-danger   {% endif %} " scope="row">
                     <td>{{ object.id }}</td>
                     <td>{{ object.get_priceUnit_display }}</td>
-                    <td>{{ object.get_state_display }}</td>
+                    {% if object.state == "dra" %}
+                    <td><span class="badge  bg-secondary rounded-pill d-inline">{{ object.get_state_display }}</span></td>
+                    {% elif object.state == "quo" %}
+                    <td><span class="badge  bg-light text-dark rounded-pill d-inline">{{ object.get_state_display }}</span></td>
+                    {% elif object.state == "val" %}
+                    <td><span class="badge  bg-primary rounded-pill d-inline">{{ object.get_state_display }}</span></td>
+                    {% elif object.state == "app" %}
+                    <td><span class="badge  bg-success rounded-pill d-inline">{{ object.get_state_display }}</span></td>
+                    {% else %}
+                    <td><span class="badge  bg-danger rounded-pill d-inline">{{ object.get_state_display }}</span></td>
+                    {% endif %}
+                    <td>{{ object.company.latin_name }}</td>
+                    <td>{{ object.static_data.projectName }}</td>
+                    <td>{{ object.static_data.quotationReference }}</td>
                     <td>{{ object.date_created }}</td>
                     <td><a class="btn btn-primary" href="{{ object.getSelfUrl }}">visit</a></td>
                   </tr>

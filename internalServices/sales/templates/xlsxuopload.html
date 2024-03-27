@@ -1,23 +1,21 @@
 {% extends "base_template.html"%}
+{% load static %}
 {% block content %}
 <div class=" mb-4">
     <div class="header">
         <h1>Upload a quote in excel format</h1>
     </div>
     <form id="example-form1" method="post" enctype="multipart/form-data">{% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3 text-center">
-            {{ field.label_tag }}
-            {{ field }}  
-            <br>    
-            {% if field.help_text %}  
-            <small style=" ">{{ field.help_text }}</small>  
-            {% endif %}  
-            {% for error in field.errors %}  
-            <p class="text-danger">{{ error }}</p>  
-            {% endfor %} 
-            </div>
-        {% endfor %}
+        {% csrf_token %}
+        {{ form.as_p }}
+        <table style="display: none">
+            {{ view.formset.empty_form }}
+        </table>
+
+        <table>
+            {{ view.formset }}
+        </table>
+
         <!--  -->
                 <!-- <input type="file" class="custom-file-input" id="customFile" name="csv" required accept=".csv" size="60"> -->
         <!-- </label> -->
@@ -27,5 +25,30 @@
         </div>
     </div>
     </form>
+
 </div>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+{{ form.media }}
+<script>
+    (function($) {
+        $('#add-form').click(function() {
+            var index = $('#id_inline_test_models-TOTAL_FORMS').val()
+            var newTable = $('#id_inline_test_models-__prefix__-DELETE').parents('table').clone()
+            newTable.find(':input').each(function() {
+                for (attr of ['name', 'id'])
+                    $(this).attr(
+                        attr,
+                        $(this).attr(attr).replace('__prefix__', index)
+                    )
+            })
+            newTable.insertBefore($(this))
+            $('#id_inline_test_models-TOTAL_FORMS').val(
+                parseInt($('#id_inline_test_models-TOTAL_FORMS').val()) + 1
+            )
+            newTable.slideDown()
+        })
+    })($)
+    </script>
+    
 {% endblock %}  
+

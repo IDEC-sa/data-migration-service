@@ -2,17 +2,18 @@ from django.forms import BaseModelForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.generic import View, TemplateView, FormView, CreateView, UpdateView, ListView, DetailView
-from .forms import UploadForm, StaticDataForm, ProductsForm
+from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm
 import io
 from django.urls import reverse
-from .services import convert_xlsx, createProdsFromQuoteRequest, validate, draften, create_prods
-from .models import QuoteRequest, Product
+from .services import convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
+from .models import QuoteRequest, Product, Company
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .permissions import SalesManPermissionMixin, OwnershipMixin, OwnerPermissionMixin
 from django.db import transaction
 from django.contrib.auth.mixins import PermissionRequiredMixin
-
+from dal import autocomplete
+from django.db.models import Q
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -188,7 +189,7 @@ class QuoteDraftenView(LoginRequiredMixin, OwnerPermissionMixin, SalesManPermiss
 
 class AddProducts(LoginRequiredMixin, UserPassesTestMixin, FormView):
     form_class = ProductsForm
-    template_name = "add-products.html"
+    template_name = "add-excel.html"
     success_url = "success.html"
 
     def test_func(self) -> bool | None:
@@ -214,3 +215,54 @@ class ProductsView(ListView):
     template_name = "products.html"
     model = Product
     paginate_by = 30
+
+
+class ProductsView(ListView):
+    template_name = "products.html" ## edit
+    model = Company
+    paginate_by = 30
+
+
+class AddCompanies(LoginRequiredMixin, UserPassesTestMixin, FormView):
+
+    form_class = CompaniesForm
+    template_name = "add-excel.html"
+    success_url = "success.html" # get success url override
+
+    def test_func(self) -> bool | None:
+        return self.request.user.is_superuser
+
+    def get_success_url(self) -> str:
+        return reverse("sales-dashboard")
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            print(form.cleaned_data["Companies"])
+            errs = create_comps(form.cleaned_data["Companies"])
+            if errs:
+                print(errs)
+                return self.form_invalid(form)
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+class CompanyAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return Company.objects.none()
+        qs = Company.objects.all()
+        if self.q:
+            qs = qs.filter(Q(latin_name__icontains=self.q) | 
+                           Q(arabic_name__icontains=self.q) | 
+                           Q(code__istartswith=self.q))
+        return qs
+    
+    def get_result_label(self, item):
+        return "".join(item.latin_name + " | " + item.arabic_name + " | " + f"[{item.code}]")
+
+    def get_selected_result_label(self, item):
+        return item.latin_name
+
+

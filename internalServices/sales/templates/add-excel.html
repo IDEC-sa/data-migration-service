@@ -2,7 +2,7 @@
 {% block content %}
 <div class=" mb-4">
     <div class="header">
-        <h1>complete quote data</h1>
+        <h1>{{ form.header }}</h1>
     </div>
     <form id="example-form1" method="post" enctype="multipart/form-data">{% csrf_token %}
         {% for field in form %}
