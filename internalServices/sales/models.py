@@ -97,7 +97,7 @@ class QuoteRequest(models.Model):
     deliveryAndInstallation = models.FloatField(null = False, default = 0)
     static_data = models.OneToOneField(StaticData, on_delete = models.CASCADE, null = True, blank = False)
     productsAdded = models.BooleanField(default = False)
-    company = models.ForeignKey(Company, on_delete = models.DO_NOTHING, null = False, blank = True)
+    company = models.ForeignKey(Company, on_delete = models.DO_NOTHING, null = False, blank = False)
 
     def df(self):
         return pd.read_excel(self.excel)

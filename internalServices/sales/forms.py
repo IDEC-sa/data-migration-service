@@ -11,7 +11,7 @@ from django.core import exceptions
 from dal import autocomplete
 
 ext_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
-pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid excel file")
+pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid pdf file")
 
 #refactor to class based validator
 
