@@ -5,7 +5,7 @@ from django.views.generic import View, TemplateView, FormView, CreateView, Updat
 from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm
 import io
 from django.urls import reverse
-from .services import convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
+from .services import generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
 from .models import QuoteRequest, Product, Company
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -14,6 +14,8 @@ from django.db import transaction
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from dal import autocomplete
 from django.db.models import Q
+from .filters import FilterQuotes, SuperFilterQuotes
+from django_filters.views import FilterView
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -84,15 +86,20 @@ class AllQuotesView(LoginRequiredMixin, ListView):
     template_name = "allquotes.html"
 
     def get_queryset(self):
-        return QuoteRequest.objects.filter(user = self.request.user).order_by('-date_created', 'id')
+        user = self.request.user
+        if not user.sysRole == "sman" or user.is_superuser:
+            return QuoteRequest.objects.filter().order_by('-date_created', 'id')
+        else:
+            return QuoteRequest.objects.filter(user = self.request.user).order_by('-date_created', 'id')
 
 class InProcessQuotesView(AllQuotesView):
     def get_queryset(self):
-        return QuoteRequest.objects.filter(user = self.request.user).exclude(state="dra").order_by('-date_created', 'id')
+        qs = super().get_queryset()
+        return qs.exclude(state="dra")
 
 class DraftQuotesView(AllQuotesView):
         def get_queryset(self):
-            return QuoteRequest.objects.filter(user = self.request.user, state="dra").order_by('-date_created', 'id')
+            return super().get_queryset().filter(state="dra")
 
 class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, DetailView):
     model = QuoteRequest
@@ -266,3 +273,30 @@ class CompanyAutocomplete(autocomplete.Select2QuerySetView):
         return item.latin_name
 
 
+class GenerateCsvForQuote(View):
+    def get(self, request, *args, **kwargs):
+        generateCsv(get_object_or_404(QuoteRequest, pk = self.kwargs["pk"]))
+        return HttpResponse("success")
+
+
+
+class QuotesFilterView(FilterView):
+    template_name = 'allquotes.html'
+    filterset_class = FilterQuotes
+    context_object_name = 'object_list'
+    
+    def get_queryset(self):
+        user = self.request.user
+        if not user.sysRole == "sman" or user.is_superuser:
+            return QuoteRequest.objects.filter()
+        else:
+            return QuoteRequest.objects.filter(user = self.request.user)
+    
+
+    def get_filterset_class(self):
+        user = self.request.user
+        if not user.sysRole == "sman" or user.is_superuser:
+            return SuperFilterQuotes
+        else:
+            return FilterQuotes
+    

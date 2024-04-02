@@ -129,4 +129,45 @@ def create_comps(excel):
         else:
             errors.append(f"error {e} happened")
     return errors
-      
+
+def generateCsv(quote:QuoteRequest):
+    
+    opt = ProductLine.objects.filter(productList__quoteRequest=quote, optional=True)
+    mand = ProductLine.objects.filter(productList__quoteRequest=quote, optional=False)
+    optDict = {"sale_order_option_ids/product_id/id":[],
+            "sale_order_option_ids/quantity": [],
+            "sale_order_option_ids/price_unit":[],
+            "Optional Products Lines/Display Name":[]}
+    mandDict = {
+        "order_line/product_uom_qty":[],
+        "order_line/price_unit":[],
+        "order_line/product_id/id":[]
+               }
+
+    for prodLine in mand:
+        mandDict["order_line/product_uom_qty"].append(prodLine.quantity)
+        mandDict["order_line/price_unit"].append(prodLine.unitPrice)
+        mandDict["order_line/product_id/id"].append(prodLine.product.odooRef)
+
+    for prodLine in opt:
+        optDict["sale_order_option_ids/product_id/id"].append(prodLine.product.odooRef)
+        optDict["sale_order_option_ids/quantity"].append(prodLine.quantity)
+        optDict["sale_order_option_ids/price_unit"].append(prodLine.unitPrice)
+        optDict["Optional Products Lines/Display Name"].append(prodLine.product.name)
+
+    optDf = pd.DataFrame(optDict, index = [num for num in range(len(opt))])
+    mandDf = pd.DataFrame(mandDict, index = [num for num in range(len(mand))])
+    statics = {
+        "id":quote.id,
+        "quote_description":quote.static_data.projectName,
+        "estimate_date":quote.static_data.date,
+        "date_order":quote.static_data.date,
+        "user_id/id": "__export__.res_users_57_a38dd07d",
+        "reviewer_ids/id":"__export__.res_users_45_3f77bb43",
+        "approver_id/id":"__export__.res_users_45_3f77bb43",
+        "rfq_number":quote.static_data.quotationReference,
+        "partner_id/id":quote.company.code
+    }
+    df = pd.DataFrame(statics, index = [0])
+    finDdf = pd.concat([df, optDf, mandDf])
+    finDdf.to_csv("finalCsv2.csv")

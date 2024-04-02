@@ -1,7 +1,24 @@
 {% extends "base_template.html"%}
 {% block content %}
-    <div class="inner cover">   
-        <div class="table-responsive">
+    <div class="inner cover">
+      {% if filter %}
+      <div class="row my-5 mx-3">
+        <div class="col">
+            <div class="card">
+                <form method="get" action="">
+                <h5 class="card-header">Search using:</h5>
+                <div class="card-body">
+                    {{ filter.form.as_p }}
+                </div>
+                <div class="card-footer text-center">
+                    <input class="btn btn-secondary" type="submit" value="Search" />
+                </div>
+            </form>
+            </div>
+        </div>
+      </div>  
+      {% endif %}
+      <div class="table-responsive">
             <table class=" table table-bordered table-hover ">
                 <thead>
                   <tr>
@@ -13,6 +30,9 @@
                     <th>quote ref</th>
                     <th>date created</th>
                     <th>link</th>
+                    {% if not user.sysRole == "sman" or user.is_superuser %}
+                    <th> sales person </th>
+                    {% endif %}
                   </tr>
                 </thead>
                 <tbody>
@@ -36,6 +56,9 @@
                     <td>{{ object.static_data.quotationReference }}</td>
                     <td>{{ object.date_created }}</td>
                     <td><a class="btn btn-primary" href="{{ object.getSelfUrl }}">visit</a></td>
+                    {% if not user.sysRole == "sman" or user.is_superuser %}
+                    <th> {{ object.user }} </th>
+                    {% endif %}
                   </tr>
                 {% endfor %}
                 </tbody>

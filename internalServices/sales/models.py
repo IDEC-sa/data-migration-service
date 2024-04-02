@@ -17,7 +17,7 @@ class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
     latin_name = models.CharField(blank = False, null = False, max_length = 200)
     code = models.CharField(blank = False, null = False, max_length = 200)
-
+ 
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
     quotationReference = models.CharField(max_length = 100, blank = True, null = False)
@@ -61,7 +61,6 @@ class StaticData(models.Model):
     contract = models.FileField(validators=[pdf_validator])
 
 class QuoteRequest(models.Model):
-
     units = {
         "SAR": _("Saudi Riyals"),
         "USD": _("United States Dollar")
