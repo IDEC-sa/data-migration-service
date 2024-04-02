@@ -17,7 +17,7 @@ class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
     latin_name = models.CharField(blank = False, null = False, max_length = 200)
     code = models.CharField(blank = False, null = False, max_length = 200)
- 
+
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
     quotationReference = models.CharField(max_length = 100, blank = True, null = False)
@@ -72,13 +72,23 @@ class QuoteRequest(models.Model):
         "app": _("Approved"),
         "napp": _("Not Approved"),
     }
+    class Meta:
+        pass
 
+    def can_views(self, user):
+        # Custom logic to check if the user can view this instance
+        print(user.sysRole)
+        print("entered auth")
+        return  user == self.user or user.is_superuser  or user.sysRole == "sdir"
+    
     priceUnit = models.CharField(choices = units, max_length=3)
     excel = models.FileField(validators=[excel_validator])
     user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, blank = False)
     state = models.CharField(choices = states, max_length=4, default = "dra")
     date_created = models.DateTimeField(blank = False, default=datetime.now)
-    discount = models.FloatField(null = False, default = 0)
+    discount = models.FloatField(null = False, default = 0, error_messages ={
+                    "null":"the discount field can'b be empty"
+                    })
     deliveryAndInstallation = models.FloatField(null = False, default = 0)
     static_data = models.OneToOneField(StaticData, on_delete = models.CASCADE, null = True, blank = False)
     productsAdded = models.BooleanField(default = False)
@@ -114,17 +124,31 @@ class QuoteRequest(models.Model):
         return user == self.user
 
 class Product(models.Model):
-    name = models.TextField(null = False, blank = False)
-    internalCode = models.TextField(null = False, blank = False)
-    odooRef = models.TextField(null = False, blank = False, unique = True)
+    name = models.TextField(null = False, blank = False, error_messages ={
+                    "null":"The line item field is not valid",
+                    })
+    internalCode = models.TextField(null = False, blank = False, error_messages ={
+                    "null":"The line item field is not valid",
+                    }, unique = True)
+    odooRef = models.TextField(null = False, blank = False, unique = True, error_messages ={
+                    "null":"The line item field is not valid",
+                    })
 
 class ProductList(models.Model):
     quoteRequest = models.OneToOneField(QuoteRequest, on_delete = models.CASCADE, related_name = "productList")
 
 class ProductLine(models.Model):
-    optional = models.BooleanField(default = False, null = False)
-    lineItem = models.PositiveIntegerField(null = False, blank = False)
-    quantity = models.PositiveIntegerField(null = False, blank = False)
-    unitPrice = models.FloatField(null = False, blank = False)
-    product = models.ForeignKey(Product, on_delete = models.DO_NOTHING, null = False, blank = False)
+    optional = models.BooleanField(default = False, null = False, )
+    lineItem = models.PositiveIntegerField(null = False, blank = False, error_messages ={
+                    "null":"The line item field is not valid",
+                    })
+    quantity = models.PositiveIntegerField(null = False, blank = False, error_messages ={
+                    "null":"The quantity  field is not valid",
+                    })
+    unitPrice = models.FloatField(null = False, blank = False, error_messages ={
+                    "null":"The unit price field is not valid",
+                    })
+    product = models.ForeignKey(Product, on_delete = models.DO_NOTHING, null = False, blank = False, error_messages ={
+                    "null":"The internal code field is not valid",
+                    })
     productList = models.ForeignKey(ProductList, on_delete = models.CASCADE, related_name = "productLines")

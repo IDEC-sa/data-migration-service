@@ -9,7 +9,7 @@ from .services import generateCsv, convert_xlsx, create_comps, createProdsFromQu
 from .models import QuoteRequest, Product, Company
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .permissions import SalesManPermissionMixin, OwnershipMixin, OwnerPermissionMixin
+from .permissions import SalesManPermissionMixin, SuperUserPermissionMixin, SalesDirectoryPermissionMixin, OwnerPermissionMixin
 from django.db import transaction
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from dal import autocomplete
@@ -71,10 +71,12 @@ class CreateProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissio
         quoteRequest = QuoteRequest.objects.get(pk = self.kwargs["quoteId"])
         erros = createProdsFromQuoteRequest(quoteRequest)
         if erros:
-            self.template_name = "failure.html"
+            self.template_name = "convert_prods.html"
             context = self.get_context_data(**kwargs)
             context["errors"] = erros
             context["review_url"] = quoteRequest.getRewviewUrl()
+            df = convert_xlsx(quoteRequest.excel)
+            context['table_data'] = df
             return self.render_to_response(context)
         else:
             return redirect(reverse("detail-quote", kwargs={
@@ -101,9 +103,10 @@ class DraftQuotesView(AllQuotesView):
         def get_queryset(self):
             return super().get_queryset().filter(state="dra")
 
-class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, DetailView):
+class QuoteDetailView(LoginRequiredMixin, DetailView):
     model = QuoteRequest
     template_name = "quote.html"
+    permission_required = ["can_view_quoterequest"]
 
     def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
         quoteReq = get_object_or_404(QuoteRequest, pk = self.kwargs["pk"])
@@ -119,24 +122,17 @@ class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, DetailView):
 
 class QuoteUpdateView(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissionMixin, UpdateView):
     model = QuoteRequest  
-    fields = [
-          "priceUnit",
-          "contract",
-          "excel"
-     ]
-
-    exclude = ["excel"]
     success_url  = "/"
-    template_name = "updatequote.html"
-
+    template_name = "add-excel.html"
+    form_class = UploadForm
     def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
-         obj = self.get_object()
-         if obj:
-              if obj.state != "dra":
-                   self.fields = ["priceUnit","contract"]
          return super().get(request, *args, **kwargs)
 
-
+    def get_success_url(self) -> str:
+        return reverse("detail-quote", kwargs={
+             "pk": self.kwargs["pk"]
+        })
+    
 class staticDataView(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
 
     template_name = 'add_static_data.html'
@@ -299,4 +295,3 @@ class QuotesFilterView(FilterView):
             return SuperFilterQuotes
         else:
             return FilterQuotes
-    
