@@ -81,6 +81,7 @@ class CreateProducts(LoginRequiredMixin, PermissionRequiredMixin,
             context = self.get_context_data(**kwargs)
             context["errors"] = erros
             context["review_url"] = quoteRequest.getRewviewUrl()
+            context["edit_url"] = quoteRequest.getEditUrl()
             df = convert_xlsx(quoteRequest.excel)
             context['table_data'] = df
             return self.render_to_response(context)
