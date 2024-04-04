@@ -6,23 +6,27 @@
         <div class="container">
           <h1 class="display-3">Odoo Sales module</h1>
           <p>Here you can add a quote, review it and wait for its validation, by only uploading your quote excel file !!</p>
-          <p><a class="btn btn-primary btn-lg" href="{% url 'uploader' %}" role="button">Add a Quote</a></p>
+          <p>
+            {% if request.user.sysRole == "sman" %}
+            <a class="btn btn-primary btn-lg" href="{% url 'uploader' %}" role="button">Add a Quote</a>
+            {% endif %}
+            <a class="btn btn-warning btn-lg" href="{% url 'all-quotes' %}" role="button">Manage Quotes</a></p>
         </div>
       </div>
     <div class="container">
         <!-- Example row of columns -->
-        <div class="row row-cols-1 row-cols-md-3 g-4 mt-1">
-            <div class="col">
-                <div class="card h-100 ">
+        {% comment %} <div class="row row-cols-1 row-cols-md-2 g-4 mt-1" >
+            <div class="col center">
+                <div class="card h-100 ce">
                     <div class="card-body">
-                        <h5 class="card-title">View all Quotes</h5>
+                        <h5 class="card-title">Manage all Quotes</h5>
                     </div>
                     <div class="card-footer ">
                         <a href="{% url 'all-quotes' %}" class="btn btn-light ">View</a>
                     </div>
                 </div>
-            </div>
-            <div class="col">
+            </div> {% endcomment %}
+            {% comment %} <div class="col">
                 <div class="card h-100 bg-secondary">
                     <div class="card-body">
                     <h5 class="card-title">View Drafted Quotes</h5>
@@ -41,7 +45,7 @@
                             <a href="{% url 'in-process-quotes' %}" class="btn btn-light ">View</a>
                         </div>
                     </div>
-                    </div>
+                    </div> {% endcomment %}
                 <!-- <div class="col">
                 <div class="card h-100 bg-secondary text-white">
                     <div class="card-body">
@@ -83,7 +87,7 @@
                 </div>
                 </div>
             </div> -->
-        </div>
+        {% comment %} </div> {% endcomment %}
     </div>
   </main>
 {% endblock %}

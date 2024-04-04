@@ -1,15 +1,17 @@
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.forms import BaseModelForm
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import View, TemplateView, FormView, CreateView, UpdateView, ListView, DetailView
 from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm
 import io
 from django.urls import reverse
 from .services import generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
-from .models import QuoteRequest, Product, Company
+from .models import QuoteRequest, Product, Company, StaticData
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .permissions import SalesManPermissionMixin, SuperUserPermissionMixin, SalesDirectoryPermissionMixin, OwnerPermissionMixin
+from .permissions import OwnerShipTestMixin, SuperUserPermissionMixin, SalesDirectoryPermissionMixin, OwnerPermissionMixin
 from django.db import transaction
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from dal import autocomplete
@@ -20,10 +22,12 @@ from django_filters.views import FilterView
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
 
-class DashboardView(LoginRequiredMixin,SalesManPermissionMixin, TemplateView):
+##change the dashboard based on the sysrole maybe needed?
+class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard.html"
 
-class excelUploader(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
+class excelUploader(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = ('sales.add_quoterequest')
     template_name = 'xlsxuopload.html'
     form_class = UploadForm
 
@@ -38,8 +42,9 @@ class excelUploader(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
          self.object = form.save()
          return super().form_valid(form)
 
-class ReviewProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissionMixin, TemplateView):
+class ReviewProducts(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin , TemplateView):
     template_name = 'convert_prods.html'
+    permission_required = ('sales.can_review_quote', )
 
     def get_object(self):
         return get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
@@ -52,18 +57,17 @@ class ReviewProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissio
         df = convert_xlsx(excel)
         context['table_data'] = df
         context["create_url"] = quoteRequest.getCreateUrl()
+        context["edit_url"] = quoteRequest.getEditUrl()
         return context
 
 #handle creation and errors when creating the model important!!!!
 ## handle if the quote is of certain state "draft   "
-class CreateProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissionMixin,
-                     UserPassesTestMixin,
+class CreateProducts(LoginRequiredMixin, PermissionRequiredMixin,
+                     OwnerShipTestMixin,
                       TemplateView):
+    permission_required = ("sales.change_quoterequest")
 
-    def test_func(self) -> bool | None:
-        quoteRequest = self.get_object()
-        return self.request.user == quoteRequest.user
-    
+
     def get_object(self):
         return get_object_or_404(QuoteRequest, pk=self.kwargs["quoteId"])
 
@@ -83,7 +87,8 @@ class CreateProducts(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissio
                  "pk":quoteRequest.id
             }))
 
-class AllQuotesView(LoginRequiredMixin, ListView):
+class AllQuotesView(LoginRequiredMixin, ListView, PermissionRequiredMixin):
+    permission_required = ("sales.view_quoterequest")
     model = QuoteRequest
     template_name = "allquotes.html"
 
@@ -103,10 +108,10 @@ class DraftQuotesView(AllQuotesView):
         def get_queryset(self):
             return super().get_queryset().filter(state="dra")
 
-class QuoteDetailView(LoginRequiredMixin, DetailView):
+class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, OwnerShipTestMixin, DetailView):
     model = QuoteRequest
     template_name = "quote.html"
-    permission_required = ["can_view_quoterequest"]
+    permission_required = ["sales.view_quoterequest"]
 
     def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
         quoteReq = get_object_or_404(QuoteRequest, pk = self.kwargs["pk"])
@@ -116,25 +121,52 @@ class QuoteDetailView(LoginRequiredMixin, DetailView):
               }))
         return super().get(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs) -> dict[str, ]:
-        context =  super().get_context_data(**kwargs)
-        return context
+    # def get_context_data(self, **kwargs) -> dict[str, ]:
+    #     context =  super().get_context_data(**kwargs)
+    #     return context
 
-class QuoteUpdateView(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissionMixin, UpdateView):
+class QuoteUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+
+    permission_required = ("sales.change_quoterequest")
     model = QuoteRequest  
     success_url  = "/"
-    template_name = "add-excel.html"
-    form_class = UploadForm
-    def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
-         return super().get(request, *args, **kwargs)
+    template_name = "updatequote.html"
+    form_class = StaticDataForm
+
+    def get_forms(self) -> BaseModelForm:
+        kwargs = self.get_form_kwargs()
+        kwargs.pop("instance")
+        if self.get_object().isReady():
+            return {"form1": UploadForm(**kwargs, instance=self.get_object()), 
+                    "form2": StaticDataForm(**kwargs, instance=self.get_object().static_data)}
+        else:
+            return {"form1":UploadForm(**kwargs, instance=self.get_object())}
+
+    def post(self, request: HttpRequest, *args: str, **kwargs) -> HttpResponse:
+        self.object = self.get_object()
+        forms = self.get_forms()
+        if all([val.is_valid() for val in forms.values()]):
+            for form in forms.values():
+                form.save()
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            return self.render_to_response(context = forms)
+
+    def get_context_data(self, **kwargs) -> dict[str, ]:
+        cn = super().get_context_data(**kwargs)
+        # instance = self.get_object()
+        cn.update(**self.get_forms())
+        return cn
 
     def get_success_url(self) -> str:
         return reverse("detail-quote", kwargs={
              "pk": self.kwargs["pk"]
         })
+    def get_object(self) -> Model:
+        return get_object_or_404(QuoteRequest, pk = self.kwargs["pk"])
     
-class staticDataView(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
-
+class staticDataView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, CreateView):
+    permission_required = ("sales.can_add_static_to_quote")
     template_name = 'add_static_data.html'
     form_class = StaticDataForm
 
@@ -142,7 +174,10 @@ class staticDataView(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
         return reverse("detail-quote", kwargs={
              "pk": self.kwargs["quoteId"]
         })
-    
+
+    def get_object(self) -> Model:
+        return get_object_or_404(QuoteRequest, pk = self.kwargs["quoteId"])
+
     @transaction.atomic
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         self.object = form.save(commit=False)
@@ -153,11 +188,11 @@ class staticDataView(LoginRequiredMixin, SalesManPermissionMixin, CreateView):
         quoteReq.save()
         return super().form_valid(form)
 
-class QuoteValidateView(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermissionMixin, View):
-    
+class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, View):
+    permission_required = ("sales.can_validate_quote")
     key = "pk"
     ownedClass = QuoteRequest
-    
+
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         validate(quoteReq)
@@ -173,8 +208,9 @@ class QuoteValidateView(LoginRequiredMixin, SalesManPermissionMixin, OwnerPermis
     def test_func(self) -> bool | None:
         return super().test_func()
 
-class QuoteDraftenView(LoginRequiredMixin, OwnerPermissionMixin, SalesManPermissionMixin, View):
+class QuoteDraftenView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, View):
 
+    permission_required = ("sales.can_draften_quote")
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         draften(quoteReq)
@@ -214,13 +250,16 @@ class AddProducts(LoginRequiredMixin, UserPassesTestMixin, FormView):
         else:
             return self.form_invalid(form)
 
-class ProductsView(ListView):
+class ProductsView(ListView, UserPassesTestMixin):
     template_name = "products.html"
     model = Product
     paginate_by = 30
 
+    def test_func(self) -> bool | None:
+        return self.request.user.is_superuser
 
-class ProductsView(ListView):
+
+class CompaniesView(ListView):
     template_name = "products.html" ## edit
     model = Company
     paginate_by = 30
@@ -250,11 +289,11 @@ class AddCompanies(LoginRequiredMixin, UserPassesTestMixin, FormView):
         else:
             return self.form_invalid(form)
 
-class CompanyAutocomplete(autocomplete.Select2QuerySetView):
+class CompanyAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return Company.objects.none()
+        # if not self.request.user.is_authenticated:
+        #     return Company.objects.none()
         qs = Company.objects.all()
         if self.q:
             qs = qs.filter(Q(latin_name__icontains=self.q) | 
@@ -276,18 +315,19 @@ class GenerateCsvForQuote(View):
 
 
 
-class QuotesFilterView(FilterView):
+class QuotesFilterView(FilterView, LoginRequiredMixin, PermissionRequiredMixin):
+
     template_name = 'allquotes.html'
     filterset_class = FilterQuotes
     context_object_name = 'object_list'
-    
+    permission_required = ("sales.view_quoterequest")
+
     def get_queryset(self):
         user = self.request.user
         if not user.sysRole == "sman" or user.is_superuser:
             return QuoteRequest.objects.filter()
         else:
             return QuoteRequest.objects.filter(user = self.request.user)
-    
 
     def get_filterset_class(self):
         user = self.request.user

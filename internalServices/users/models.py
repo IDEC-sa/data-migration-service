@@ -1,6 +1,7 @@
-from django.db import models
+from typing import Iterable
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-
+from django.contrib.auth.models import Group, Permission
 
 # Create your models here.
 
@@ -15,3 +16,18 @@ class User(AbstractUser):
     }
     email = models.EmailField(_("email address"), blank = False, null = False, unique = True)
     sysRole = models.CharField(max_length=4, choices=SYSROLES, default="sman")
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        adding = self._state.adding
+        super().save(*args, **kwargs)
+        if adding:
+            if self.sysRole == "sdir":
+                dirs = Group.objects.get(name='salesdirectors')
+                dirs.user_set.add(self)
+                dirs.save()
+            elif self.sysRole == "sman":
+                salesmen = Group.objects.get(name='salesmen')
+                salesmen.user_set.add(self)
+                salesmen.save()
+

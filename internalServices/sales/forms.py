@@ -1,7 +1,5 @@
 from typing import Any
 from django import forms
-from django.core.files.base import File
-from django.db.models.base import Model
 from django.forms.utils import ErrorList
 from .models import QuoteRequest, StaticData
 from .services import validate_prods
@@ -49,6 +47,7 @@ class UploadForm(forms.ModelForm):
         obj:QuoteRequest = self.instance
         if obj.productsAdded:
             self.fields.pop("excel")
+
     def __init__(self,
         data=None,
         files=None,
@@ -62,6 +61,7 @@ class UploadForm(forms.ModelForm):
         use_required_attribute=None,
         renderer=None,) -> None:
         super().__init__(data, files, auto_id, prefix, initial, error_class, label_suffix, empty_permitted, instance, use_required_attribute, renderer)
+ 
         self.get_fields()
 
     def clean_excel(self) -> dict[str, Any]:
@@ -84,15 +84,11 @@ class StaticDataForm(forms.ModelForm):
     )
     contract = forms.FileField(validators=[pdf_validator, validate_file_mimetype2], 
                             help_text="this is a sample help text", 
-                            widget=forms.FileInput(attrs={
-                                'accept':'.pdf',
-                            }))
+                            )
     
     class Meta:
         model = StaticData
         fields = "__all__"
-
-
 
 class ProductsForm(forms.Form):
     products = forms.FileField(validators=[ext_validator, validate_file_mimetype], 
@@ -112,3 +108,4 @@ class CompaniesForm(forms.Form):
                             }))
     def header(self):
         return "Add Companies to the db"
+

@@ -3,10 +3,12 @@ from typing import Any
 from django.contrib.auth.mixins import UserPassesTestMixin,  AccessMixin, PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
 
-class SalesManPermissionMixin(UserPassesTestMixin):
+class OwnerShipTestMixin(UserPassesTestMixin):
+
     def test_func(self) -> bool | None:
-        print("sdasdas")
-        return self.request.user.sysRole == "sman" or self.request.user.is_superuser
+        print(self.request.user.sysRole)
+        return self.request.user == self.get_object().user or self.request.user.is_superuser \
+        or self.request.user.sysRole == "sdir"
 
 # class OwnershipMixin(AccessMixin):
 
@@ -21,8 +23,11 @@ class SalesManPermissionMixin(UserPassesTestMixin):
 #         return super().dispatch(request, *args, **kwargs)
 
 class OwnerPermissionMixin(PermissionRequiredMixin):
+
     def has_permission(self) -> bool:
-       boolll = self.get_object().user == self.request.user
+       
+       boolll = (self.get_object().user == self.request.user ) or \
+       self.request.user.is_superuser or self.request.user.sysRole != "sman"
        return boolll
 
 class SuperUserPermissionMixin(PermissionRequiredMixin):
@@ -35,4 +40,3 @@ class SalesDirectoryPermissionMixin(PermissionRequiredMixin):
        boolll = self.request.user.sysRole == "sdir"
        print(boolll)
        return boolll
-

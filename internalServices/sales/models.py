@@ -17,6 +17,8 @@ class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
     latin_name = models.CharField(blank = False, null = False, max_length = 200)
     code = models.CharField(blank = False, null = False, max_length = 200)
+    def __str__(self) -> str:
+        return self.latin_name
 
 class StaticData(models.Model):
     ##add constrains to the file upload and validation
@@ -60,6 +62,11 @@ class StaticData(models.Model):
             ])
     contract = models.FileField(validators=[pdf_validator])
 
+    @property
+    def user(self):
+        print("enterdeddddd")
+        return self.quoteRequest.user
+
 class QuoteRequest(models.Model):
     units = {
         "SAR": _("Saudi Riyals"),
@@ -73,7 +80,14 @@ class QuoteRequest(models.Model):
         "napp": _("Not Approved"),
     }
     class Meta:
-        pass
+        permissions = [
+            ("can_approve_quote", "can approve quotations"),
+            ("can_disapprove_quote", "can disapprove quotations"),
+            ("can_validate_quote", "can validate a quote"),
+            ("can_add_static_to_quote", "can add static data to quote"),
+            ("can_draften_quote", "can draften quotation"),
+            ("can_review_quote", "can review a quotations")
+        ]
 
     def can_views(self, user):
         # Custom logic to check if the user can view this instance
@@ -114,6 +128,10 @@ class QuoteRequest(models.Model):
         return reverse("detail-quote", kwargs={
             "pk":self.id
         })
+    def getEditUrl(self):
+        return reverse("update-quote", kwargs= {
+            "pk":self.id
+        })
     def get_fields(self):
         return self._meta.get_all_field_names()
 
@@ -121,7 +139,7 @@ class QuoteRequest(models.Model):
         return self.static_data
 
     def can_view(self, user):
-        return user == self.user
+        return user == self .user
 
 class Product(models.Model):
     name = models.TextField(null = False, blank = False, error_messages ={
@@ -129,7 +147,7 @@ class Product(models.Model):
                     })
     internalCode = models.TextField(null = False, blank = False, error_messages ={
                     "null":"The line item field is not valid",
-                    }, unique = True)
+                    })
     odooRef = models.TextField(null = False, blank = False, unique = True, error_messages ={
                     "null":"The line item field is not valid",
                     })
