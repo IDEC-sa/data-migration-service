@@ -1,4 +1,5 @@
 {% extends "base_template.html"%}
+{% load page_tags %}
 {% block content %}
     <div class="inner cover">
       {% if filter %}
@@ -71,7 +72,7 @@
              <!-- Pagination -->
   <div class='pagination justify-content-center'>
     {% if page_obj.has_previous %}
-      <a href='{% url "all-quotes" %}?page={{ page_obj.previous_page_number }}'>Previous </a>
+      <a href='{% querystring_replace request 'page' page_obj.previous_page_number %}'>Previous </a>
     {% endif %}
 
     <span class='mx-4'>
@@ -79,7 +80,7 @@
     </span>
 
     {% if page_obj.has_next %}
-      <a href='{% url "all-quotes" %}?page={{ page_obj.next_page_number }}' > Next</a>
+      <a href='{% querystring_replace request 'page' page_obj.next_page_number %}' > Next</a>
     {% endif %}
   </div>
   <!-- END Pagination -->
