@@ -17,7 +17,9 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from dal import autocomplete
 from django.db.models import Q
 from .filters import FilterQuotes, SuperFilterQuotes
+from .sa import MyPaginator
 from django_filters.views import FilterView
+
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -87,7 +89,7 @@ class CreateProducts(LoginRequiredMixin, PermissionRequiredMixin,
                  "pk":quoteRequest.id
             }))
 
-class AllQuotesView(LoginRequiredMixin, ListView, PermissionRequiredMixin):
+class AllQuotesView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     permission_required = ("sales.view_quoterequest")
     model = QuoteRequest
     template_name = "allquotes.html"
@@ -211,6 +213,7 @@ class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTe
 class QuoteDraftenView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, View):
 
     permission_required = ("sales.can_draften_quote")
+
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         draften(quoteReq)
@@ -254,6 +257,7 @@ class ProductsView(ListView, UserPassesTestMixin):
     template_name = "products.html"
     model = Product
     paginate_by = 30
+    paginator_class = MyPaginator
 
     def test_func(self) -> bool | None:
         return self.request.user.is_superuser
@@ -313,14 +317,14 @@ class GenerateCsvForQuote(View):
         generateCsv(get_object_or_404(QuoteRequest, pk = self.kwargs["pk"]))
         return HttpResponse("success")
 
-
-
-class QuotesFilterView(FilterView, LoginRequiredMixin, PermissionRequiredMixin):
+class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
 
     template_name = 'allquotes.html'
     filterset_class = FilterQuotes
     context_object_name = 'object_list'
     permission_required = ("sales.view_quoterequest")
+    paginate_by = 10
+    paginator_class = MyPaginator
 
     def get_queryset(self):
         user = self.request.user
@@ -328,6 +332,13 @@ class QuotesFilterView(FilterView, LoginRequiredMixin, PermissionRequiredMixin):
             return QuoteRequest.objects.filter()
         else:
             return QuoteRequest.objects.filter(user = self.request.user)
+    def get(self, request, *args, **kwargs):
+        try:
+            self.paginate_by = request.GET["paginate"]
+        except:
+            self.paginate_by = 10
+        self.extra_context = {"pages":self.paginate_by}
+        return super().get(request, *args, **kwargs)
 
     def get_filterset_class(self):
         user = self.request.user
