@@ -74,7 +74,7 @@ def createProdsFromQuoteRequest(quoteReqeust:QuoteRequest):
         errors.append(f"product in line number {len(prodLines) + 1} and internal code {prod['internalcode']} doesn't exist in the database. please check your internal code thouroghly or contact with the admin")
     except exceptions.ValidationError as e:
         for k, v in e.error_dict.items():
-            errors.append(f"field {k} of product number {len(prodLines) + 1} has the following error: {[s.__str__() for s in v]}")
+            errors.append(f"field {k} of product number {len(prodLines) + 1} has the following error list: {[str(s) for s in v]}")
     except Exception as e:
         if prod:
             errors.append(f"error happened during the creation process of product number {len(prodLines) + 1}.")
