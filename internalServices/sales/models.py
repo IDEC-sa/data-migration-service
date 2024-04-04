@@ -161,9 +161,7 @@ class ProductLine(models.Model):
                     "null":"The line item field is not valid",
                     })
     quantity = models.PositiveIntegerField(null = False, blank = False)
-    unitPrice = models.FloatField(null = False, blank = False, error_messages ={
-                    "null":"The unit price field is not valid",
-                    })
+    unitPrice = models.DecimalField(null = False, blank = False, decimal_places=4, max_digits=15)
     product = models.ForeignKey(Product, on_delete = models.DO_NOTHING, null = False, blank = False, error_messages ={
                     "null":"The internal code field is not valid",
                     })
