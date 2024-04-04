@@ -160,9 +160,7 @@ class ProductLine(models.Model):
     lineItem = models.PositiveIntegerField(null = False, blank = False, error_messages ={
                     "null":"The line item field is not valid",
                     })
-    quantity = models.PositiveIntegerField(null = False, blank = False, error_messages ={
-                    "null":"The quantity  field is not valid",
-                    })
+    quantity = models.PositiveIntegerField(null = False, blank = False)
     unitPrice = models.FloatField(null = False, blank = False, error_messages ={
                     "null":"The unit price field is not valid",
                     })

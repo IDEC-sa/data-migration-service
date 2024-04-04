@@ -59,19 +59,25 @@ def createProdsFromQuoteRequest(quoteReqeust:QuoteRequest):
                 actualInternalProd = Product.objects.get(internalCode=prod["internalcode"])
                 productLine = ProductLine(product = actualInternalProd, lineItem = prod["lineitem"], 
                                         quantity=prod["qty"], unitPrice=prod["unitprice"])
+                
                 if re.match(str(prod["totalprice"]).lower().strip(), r"option"):
                     productLine.optional = True
                 productLine.productList = prodList
-                prodLines.append(productLine)
+                print("before clean")
                 productLine.full_clean()
+                print("after clean")
+                prodLines.append(productLine)
             ProductLine.objects.bulk_create(prodLines)
             quoteReqeust.productsAdded = True
             quoteReqeust.save()
     except exceptions.ObjectDoesNotExist as e:
         errors.append(f"product in line number {len(prodLines) + 1} and internal code {prod['internalcode']} doesn't exist in the database. please check your internal code thouroghly or contact with the admin")
+    except exceptions.ValidationError as e:
+        for k, v in e.error_dict.items():
+            errors.append(f"field {k} of product number {len(prodLines) + 1} has the following error: {[s.__str__() for s in v]}")
     except Exception as e:
         if prod:
-            errors.append(f"error {e} happened during the creation process of product number {len(prodLines) + 1}.")
+            errors.append(f"error happened during the creation process of product number {len(prodLines) + 1}.")
         else:
             errors.append(f"error {e} happened.")
     return errors
