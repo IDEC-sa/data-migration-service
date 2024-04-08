@@ -348,3 +348,6 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             return SuperFilterQuotes
         else:
             return FilterQuotes
+    def get_filterset_kwargs(self,*args):
+        kwargs = super().get_filterset_kwargs(*args)
+        return kwargs  
