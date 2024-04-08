@@ -183,8 +183,8 @@ class ProductLine(models.Model):
     productList = models.ForeignKey(ProductList, on_delete = models.CASCADE, related_name = "productLines")
 
 class Serial(models.Model):
-    prefix = models.CharField(default="A", null=False, blank=False, unique=True)
-    postfix = models.CharField(default="A", null=False, blank=False, unique=True)
+    prefix = models.CharField(default="A", null=False, blank=False, unique=True, max_length=30)
+    postfix = models.CharField(default="A", null=False, blank=False, unique=True, max_length=30)
     next = models.PositiveBigIntegerField(default=0, null=False, blank=False)
 
     def getNext(self):
