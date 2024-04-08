@@ -329,10 +329,11 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
 
     def get_queryset(self):
         user = self.request.user
+        query = QuoteRequest.objects.order_by("date_created")
         if not user.sysRole == "sman" or user.is_superuser:
-            return QuoteRequest.objects.filter()
+            return query.filter()
         else:
-            return QuoteRequest.objects.filter(user = self.request.user)
+            return query.filter(user = self.request.user)
     def get(self, request, *args, **kwargs):
         try:
             self.paginate_by = request.GET["paginate"]

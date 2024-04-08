@@ -7,12 +7,19 @@ from django.core.validators import FileExtensionValidator, MinLengthValidator, M
 import magic
 from django.core import exceptions
 from datetime import datetime
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_init
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 
 excel_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
 pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid excel file")
 zeroPositiveValidator = MinValueValidator(0, "Negative values are not allowed")
+
+
+    
+# class SerialMixin():
+#     Serial = models.ForeignKey(Serial, on_delete=models.DO_NOTHING)
 
 class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
@@ -110,10 +117,14 @@ class QuoteRequest(models.Model):
     static_data = models.OneToOneField(StaticData, on_delete = models.CASCADE, null = True, blank = False)
     productsAdded = models.BooleanField(default = False)
     company = models.ForeignKey(Company, on_delete = models.DO_NOTHING, null = False, blank = False)
+    serial = models.CharField(max_length=100, editable=False, null=True)
 
+    # def getSerial(self):
+    #     serial = Serial.objects.get_or_create(prefix="qutoe-")
+    #     return serial.getNext()
     def df(self):
         return pd.read_excel(self.excel)
-
+    
     def getCreateUrl(self):
         return reverse("createprods", kwargs={
             "quoteId":self.id
@@ -170,3 +181,20 @@ class ProductLine(models.Model):
                     "null":"The internal code field is not valid",
                     })
     productList = models.ForeignKey(ProductList, on_delete = models.CASCADE, related_name = "productLines")
+
+class Serial(models.Model):
+    prefix = models.CharField(default="A", null=False, blank=False, unique=True)
+    postfix = models.CharField(default="A", null=False, blank=False, unique=True)
+    next = models.PositiveBigIntegerField(default=0, null=False, blank=False)
+
+    def getNext(self):
+        tmp = self.next
+        self.next += 1
+        self.save()
+        return self.prefix + str(tmp) + self.postfix
+
+    @receiver(post_save, sender=QuoteRequest)
+    def _post_save_receiver(sender, instance, created, **kwargs):
+        if created or not instance.serial:
+            qsSerial = Serial.objects.get_or_create(prefix="quote-", postfix="/2023")[0]
+            instance.serial = qsSerial.getNext()
