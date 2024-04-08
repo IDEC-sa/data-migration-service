@@ -7,6 +7,7 @@ import magic
 from django.core.validators import FileExtensionValidator, BaseValidator
 from django.core import exceptions
 from dal import autocomplete
+from datetime import date
 
 ext_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
 pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid pdf file")
@@ -32,10 +33,10 @@ class UploadForm(forms.ModelForm):
     
     excel = forms.FileField(validators=[ext_validator, validate_file_mimetype], 
                             help_text="this is a sample help text", 
-                            widget=forms.FileInput(attrs={
+                            widget=forms.ClearableFileInput(attrs={
                                 'accept':'.xlsx',
                             }))
-    
+
     class Meta:
         model = QuoteRequest
         exclude = ["user", "state", "date_created", "static_data","productsAdded"]
@@ -95,7 +96,7 @@ class ProductsForm(forms.Form):
                             help_text="this is a sample help text", 
                             widget=forms.FileInput(attrs={
                                 'accept':'.xlsx',
-                            }))
+                            }))    
     def header(self):
         return "Add products to the db"
 

@@ -22,7 +22,7 @@ class SuperFilterQuotes(django_filters.FilterSet):
     quoteRef = django_filters.CharFilter(label = "Quotation reference",
                                              field_name='static_data__quotationReference', 
                                             lookup_expr = 'contains')
-    user = django_filters.ModelChoiceFilter(queryset=User.objects.all())
+    user = django_filters.ModelChoiceFilter(queryset=User.objects.filter(sysRole = "sman"))
     
     class Meta:
         model = QuoteRequest
