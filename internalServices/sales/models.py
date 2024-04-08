@@ -9,6 +9,8 @@ from django.core import exceptions
 from datetime import datetime
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_init
+from django.db.models import Q
+
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 
@@ -183,9 +185,12 @@ class ProductLine(models.Model):
     productList = models.ForeignKey(ProductList, on_delete = models.CASCADE, related_name = "productLines")
 
 class Serial(models.Model):
-    prefix = models.CharField(default="A", null=False, blank=False, unique=True, max_length=30)
-    postfix = models.CharField(default="A", null=False, blank=False, unique=True, max_length=30)
+    prefix = models.CharField(default="A", null=False, blank=False, max_length=30)
+    postfix = models.CharField(default="A", null=False, blank=False, max_length=30)
     next = models.PositiveBigIntegerField(default=0, null=False, blank=False)
+    
+    class Meta:
+        unique_together = ('prefix', 'postfix')
 
     def getNext(self):
         tmp = self.next
@@ -196,5 +201,6 @@ class Serial(models.Model):
     @receiver(post_save, sender=QuoteRequest)
     def _post_save_receiver(sender, instance, created, **kwargs):
         if created or not instance.serial:
-            qsSerial = Serial.objects.get_or_create(prefix="quote-", postfix="/2023")[0]
+            qsSerial, cr = Serial.objects.get_or_create(prefix="quo-", postfix="/2023")
+            print(f"created is {cr}")
             instance.serial = qsSerial.getNext()
