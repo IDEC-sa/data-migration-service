@@ -7,7 +7,20 @@
     </div>
     <form id="example-form1" method="post" enctype="multipart/form-data">{% csrf_token %}
         {% csrf_token %}
-        {{ form.as_p }}
+        {% comment %} {{ form.as_p }} {% endcomment %}
+        {% for field in form %}
+        <div class="mb-3 text-center">
+        {{ field.label_tag }}
+        {{ field }}  
+        <br>    
+        {% if field.help_text %}  
+        <small style=" ">{{ field.help_text }}</small>  
+        {% endif %}  
+        {% for error in field.errors %}  
+        <p class="text-danger">{{ error }}</p>  
+        {% endfor %} 
+        </div>
+    {% endfor %}
         <table style="display: none">
             {{ view.formset.empty_form }}
         </table>

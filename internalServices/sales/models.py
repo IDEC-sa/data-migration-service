@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 import pandas as pd
 from django.urls import reverse
-from django.core.validators import FileExtensionValidator, MinLengthValidator
+from django.core.validators import FileExtensionValidator, MinLengthValidator, MinValueValidator
 import magic
 from django.core import exceptions
 from datetime import datetime
@@ -12,6 +12,7 @@ User = settings.AUTH_USER_MODEL
 
 excel_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
 pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid excel file")
+zeroPositiveValidator = MinValueValidator(0, "Negative values are not allowed")
 
 class Company(models.Model):
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
@@ -89,21 +90,23 @@ class QuoteRequest(models.Model):
             ("can_review_quote", "can review a quotations")
         ]
 
-    def can_views(self, user):
-        # Custom logic to check if the user can view this instance
-        print(user.sysRole)
-        print("entered auth")
-        return  user == self.user or user.is_superuser  or user.sysRole == "sdir"
-    
     priceUnit = models.CharField(choices = units, max_length=3)
     excel = models.FileField(validators=[excel_validator])
     user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, blank = False)
     state = models.CharField(choices = states, max_length=4, default = "dra")
     date_created = models.DateTimeField(blank = False, default=datetime.now)
-    discount = models.FloatField(null = False, default = 0, error_messages ={
-                    "null":"the discount field can'b be empty"
-                    })
-    deliveryAndInstallation = models.FloatField(null = False, default = 0)
+    discount = models.DecimalField(null = False, default = 0, 
+                                   decimal_places=3, 
+                                   max_digits=15,
+                                   validators=[zeroPositiveValidator], 
+                                   error_messages ={
+                                        "null":"the discount field can'b be empty"
+                                        })
+    deliveryAndInstallation = models.DecimalField(null = False, default = 0,
+                                                decimal_places=3, 
+                                                max_digits=15,
+                                                validators=[zeroPositiveValidator]
+                                                )
     static_data = models.OneToOneField(StaticData, on_delete = models.CASCADE, null = True, blank = False)
     productsAdded = models.BooleanField(default = False)
     company = models.ForeignKey(Company, on_delete = models.DO_NOTHING, null = False, blank = False)
@@ -115,6 +118,7 @@ class QuoteRequest(models.Model):
         return reverse("createprods", kwargs={
             "quoteId":self.id
         })
+
     def getCreateStaticUrl(self):
         return reverse("add-static", kwargs={
             "quoteId":self.id
