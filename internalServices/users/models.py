@@ -23,11 +23,11 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
         if adding:
             if self.sysRole == "sdir":
-                dirs = Group.objects.get(name='salesdirectors')
+                dirs = Group.objects.get_or_create(name='salesdirectors')[0]
                 dirs.user_set.add(self)
                 dirs.save()
             elif self.sysRole == "sman":
-                salesmen = Group.objects.get(name='salesmen')
+                salesmen = Group.objects.get_or_create(name='salesmen')[0]
                 salesmen.user_set.add(self)
                 salesmen.save()
 

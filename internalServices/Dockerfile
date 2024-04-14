@@ -19,7 +19,7 @@ COPY . $APP_HOME
 
 # run python command
 # RUN rm -r ./*/migrations/*
-RUN python manage.py makemigrations
+# RUN python manage.py makemigrations
 # RUN python manage.py migrate
 # RUN python manage.py collectstatic --noinput --clear
 
