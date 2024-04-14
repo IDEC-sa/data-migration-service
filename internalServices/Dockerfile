@@ -18,7 +18,7 @@ RUN pip install -r requirements.txt
 COPY . $APP_HOME
 
 # run python command
-# RUN rm -r ./*/migrations/*
+RUN rm -r ./*/migrations/*00*.py
 # RUN python manage.py makemigrations
 # RUN python manage.py migrate
 # RUN python manage.py collectstatic --noinput --clear
