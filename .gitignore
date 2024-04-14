@@ -6,3 +6,7 @@ migrations
 settings.py
 env
 *.pyc
+
+!final_companies.xlsx
+!finalProds.xlsx
+!quote.xlsx
