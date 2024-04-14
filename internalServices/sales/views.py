@@ -329,7 +329,7 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
 
     def get_queryset(self):
         user = self.request.user
-        query = QuoteRequest.objects.order_by("date_created")
+        query = QuoteRequest.objects.order_by("-id")
         if not user.sysRole == "sman" or user.is_superuser:
             return query.filter()
         else:
@@ -348,6 +348,3 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             return SuperFilterQuotes
         else:
             return FilterQuotes
-    def get_filterset_kwargs(self,*args):
-        kwargs = super().get_filterset_kwargs(*args)
-        return kwargs  
