@@ -1,0 +1,44 @@
+version: '1.0'
+
+# Defining the compose version
+services:
+
+ nginx:
+  build: ./nginx
+  ports:
+    - 8687:80
+  volumes:
+    - static_volume:/app/root
+    - media_volume:/app/mediafiles
+  depends_on:
+    - myproject
+  restart: "always"
+
+
+ myproject:
+  hostname: internalServices
+  depends_on:
+    - db
+  build: ./internalServices
+  command: sh -c "gunicorn internalServices.wsgi:application --bind 0.0.0.0:8000"
+  expose: 
+   - 8000
+  restart: "always"
+  volumes:
+   - static_volume:/app/root
+   - media_volume:/app/mediafiles
+  
+ db:
+  hostname: db
+  image: postgres:15
+  volumes:
+   - postgres_data:/var/lib/postgresql/data/
+  environment:
+   - POSTGRES_USER=postgres
+   - POSTGRES_PASSWORD=dbpassword
+   - POSTGRES_DB=depdb
+
+volumes:
+ static_volume:
+ media_volume:
+ postgres_data:

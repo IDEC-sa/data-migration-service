@@ -57,3 +57,8 @@
     text-align: center;
     transition: color .2s ease-in-out;
   }
+
+
+  .select2-results__option[aria-selected]{
+    color: #111;
+  }

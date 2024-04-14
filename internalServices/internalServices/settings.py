@@ -58,6 +58,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8687',
+]
+
 ROOT_URLCONF = 'internalServices.urls'
 
 TEMPLATES = [
@@ -85,12 +89,16 @@ WSGI_APPLICATION = 'internalServices.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'testdb', 
+        'NAME': 'depdb', 
         'USER': 'postgres',
-        # 'PASSWORD': 'your_db_password',
-        'HOST': '127.0.0.1', 
+        'PASSWORD': 'dbpassword',
+        'HOST': 'db', 
         'PORT': '5432',
-    }
+    },
+    'sqlite': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
 }
 
 
@@ -133,6 +141,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'boot'),
 ]
+
+MEDIA_URL = "/media/" #new
+MEDIA_ROOT = Path(BASE_DIR, 'mediafiles') #new
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

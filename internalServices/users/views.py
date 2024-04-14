@@ -12,6 +12,8 @@ from django.contrib.auth.views import LoginView, LogoutView
 class UserLoginView(LoginView):
     template_name = "login.html"
     authentication_form = UserLoginForm
+    def get(self, request: HttpRequest, *args: str, **kwargs) :
+        return super().get(request, *args, **kwargs)
 
 
 class UserLogoutView(LogoutView):
