@@ -15,12 +15,9 @@ COPY ./requirements.txt $APP_HOME
 RUN pip install -r requirements.txt
 
 # copy app folder
-COPY . $APP_HOME
+COPY ./root $APP_HOME/root
+COPY ./root $APP_HOME/mediafiles
 
 # run python command
-RUN rm -r ./*/migrations/*00*.py
-# RUN python manage.py makemigrations
-# RUN python manage.py migrate
-# RUN python manage.py collectstatic --noinput --clear
-
-
+# RUN python $APP_HOME/manage.py makemigrations
+# RUN python $APP_HOME/manage.py migrate

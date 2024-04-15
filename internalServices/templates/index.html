@@ -1,14 +1,17 @@
 
 {% extends "base_template.html" %}
+{% load static %}
       {% block content %}
       <main role="main" class="inner cover mt-auto">
         <h1 class="cover-heading">Welcome to the odoo migration service</h1>
-        <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
+        <p class="lead">Here we provide multiple services to ease and automate the process of odoo data migration, below you can find a video tutorial on how to upload a sales quotation request using this website.</p>
         <p class="lead">
+          <video width="700" height="400" controls>
+          <source src="{% static "salesmen-illu.mp4" %}" type="video/mp4">
+          </vidro>
           <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
         </p>
       </main>
-
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>This Site was made with Love by IDEC Software development team</p>

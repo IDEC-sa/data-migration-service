@@ -32,7 +32,6 @@ def validate_file_mimetype2(file):
 class UploadForm(forms.ModelForm):
     
     excel = forms.FileField(validators=[ext_validator, validate_file_mimetype], 
-                            help_text="this is a sample help text", 
                             widget=forms.ClearableFileInput(attrs={
                                 'accept':'.xlsx',
                             }))
@@ -84,7 +83,6 @@ class StaticDataForm(forms.ModelForm):
         input_formats=["%Y-%m-%d"]
     )
     contract = forms.FileField(validators=[pdf_validator, validate_file_mimetype2], 
-                            help_text="this is a sample help text", 
                             )
     
     class Meta:

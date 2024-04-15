@@ -53,7 +53,7 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link {% if request.resolver_match.url_name == 'home' %} active {% endif %}" href="{% url 'home' %}">Home</a>
             <a class="nav-link {% if 'sales' in request.path %} active {% endif %}" href="{% url 'sales-dashboard' %}">Sales</a>
-            <a class="nav-link {% if request.resolver_match.url_name == 'contact' %} active {% endif %}" href="#">Contact</a>
+            {% comment %} <a class="nav-link {% if request.resolver_match.url_name == 'contact' %} active {% endif %}" href="#">Contact</a> {% endcomment %}
      <p class="nav-link">
        <form id="logout-form" method="post" action="{% url 'logout' %}">
          {% csrf_token %}

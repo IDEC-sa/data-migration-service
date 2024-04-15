@@ -12,10 +12,18 @@ from django.contrib.auth.views import LoginView, LogoutView
 class UserLoginView(LoginView):
     template_name = "login.html"
     authentication_form = UserLoginForm
+
     def get(self, request: HttpRequest, *args: str, **kwargs) :
+        print("get")
         return super().get(request, *args, **kwargs)
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        return super().post(request, *args, **kwargs)
 
-
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        print(form)
+        return response
+    
 class UserLogoutView(LogoutView):
     pass
 

@@ -5,11 +5,13 @@
     <div class="header">
         <h1>Upload a quote in excel format</h1>
     </div>
+    <p> The uploaded excel should have the same column names and format of the <a href="{% static 'sample_excel.xlsx' %}">Guide Excel</a> </p>
+    <p>Don't forget to include the start keyword just before the products table</p>
     <form id="example-form1" method="post" enctype="multipart/form-data">{% csrf_token %}
         {% csrf_token %}
         {% comment %} {{ form.as_p }} {% endcomment %}
         {% for field in form %}
-        <div class="mb-3 text-center">
+        <div class="mb-3 text-center">  
         {{ field.label_tag }}   
         {{ field }}  
         <br>    

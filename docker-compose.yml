@@ -25,9 +25,10 @@ services:
    - 8000
   restart: "always"
   volumes:
+   - "./internalServices:/app"
    - static_volume:/app/root
    - media_volume:/app/mediafiles
-  
+
  db:
   hostname: db
   image: postgres:15
