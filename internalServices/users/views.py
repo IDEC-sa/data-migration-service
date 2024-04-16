@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView, CreateView
 from django.urls import reverse
 from django.contrib.auth.views import LoginView, LogoutView
-
+import logging
 # Create your views here.
 
 
@@ -14,7 +14,9 @@ class UserLoginView(LoginView):
     authentication_form = UserLoginForm
 
     def get(self, request: HttpRequest, *args: str, **kwargs) :
-        print("get")
+        logging.info( msg="some one is trying to login into the system")
+        # logging.log(level=logging.WARNING, msg="some one is trying to login into the system")
+        # logging.log(level=logging.ERROR, msg="some one is trying to login into the system")
         return super().get(request, *args, **kwargs)
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)

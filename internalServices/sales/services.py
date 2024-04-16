@@ -32,10 +32,11 @@ def validate_prods(excel):
         raise excep.ValidationError("please specify the products table with the start key word")
 
     to_start = (df.iloc[:, 0] == "start").argmax() + 1
-    prods = convert_ranged(to_start, 70, 1, df)
+    prods = convert_ranged(to_start, 70, 0, df)
     cols = set(prods.columns[:])
     cols = [str(col).replace("\n", " ").strip().lower()  if isinstance(col, str) else col for col in cols]
     errors = []
+    print(cols)
     for col in requiredd_cols:
         if col not in cols:
             errors.append({col:f"column {col} should exist"})
