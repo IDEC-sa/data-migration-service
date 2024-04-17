@@ -124,6 +124,8 @@ class QuoteRequest(models.Model):
     # def getSerial(self):
     #     serial = Serial.objects.get_or_create(prefix="qutoe-")
     #     return serial.getNext()
+    def updatable(self):
+        return (self.state == "dra" and not self.isReady()) or self.state == "quo"
     def df(self):
         return pd.read_excel(self.excel)
     

@@ -20,6 +20,7 @@
     {% if object.state in "quo"%}
         <div class="btn-group" role="group" aria-label="Basic example">
             <a href="{% url 'validate-quote' object.id %}" type="button" style="margin: 10px;"  class="btn btn-secondary">Validate</a>
+
         </div> 
     {% endif %}
     {% if object.state in "dra" and not object.productsAdded %}
@@ -35,6 +36,11 @@
     {% if  object.state not in "dra" %}
         <div class="btn-group" role="group" aria-label="Basic example">
             <a href="{% url 'draften-quote' object.id %}" type="button" style="margin: 10px;" class="btn btn-secondary">Mark as draft</a>
+      </div>
+    {% endif %}
+    {% if  object.updatable %}
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <a href="{% url 'update-quote' object.id %}" type="button" style="margin: 10px;" class="btn btn-secondary">Update</a>
       </div>
     {% endif %}
     </div>
