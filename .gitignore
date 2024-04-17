@@ -6,6 +6,7 @@ migrations
 settings.py
 env
 *.pyc
+internalServices/warning.log
 
 !final_companies.xlsx
 !finalProds.xlsx

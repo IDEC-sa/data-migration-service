@@ -77,6 +77,19 @@
                         </ul>
                     </div>
                 </div>
+                {% if object.isReady %}
+                <div class="col-md-6">
+                    <div class="card" style="margin-top: 3rem; width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Added files</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">    
+                        <li class="list-group-item"><a style="color:black" href="{{ object.excel.url }}">Original Quotation</a></li>
+                        <li class="list-group-item"><a style="color:black" href="{{ object.static_data.contract.url }}">Contract PDF</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% if object.df is not None %}
