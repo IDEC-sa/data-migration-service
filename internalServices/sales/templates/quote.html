@@ -47,6 +47,7 @@
                     <div class="col-md-6">
                         <div class="card" style="width: 18rem;">
                             <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Sales Man: {{ object.user.username }}</li>
                             <li class="list-group-item">price unit: {{ object.get_priceUnit_display }}</li>
                             <li class="list-group-item">quoteRef: {{ object.static_data.quotationReference }}</li>
                             <li class="list-group-item">Date: {{object.static_data.date}}</li>
