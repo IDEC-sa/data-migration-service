@@ -1,11 +1,14 @@
 from typing import Any
+from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 from .forms import SignUpForm, SalesManSignUpForm, UserLoginForm, DirectorSignUpForm, SalesDirectorSignUpForm
 from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView, CreateView
 from django.urls import reverse
 from django.contrib.auth.views import LoginView, LogoutView
 import logging
+from actions import services
 # Create your views here.
 
 
@@ -15,19 +18,21 @@ class UserLoginView(LoginView):
 
     def get(self, request: HttpRequest, *args: str, **kwargs) :
         logging.info( msg="some one is trying to login into the system")
-        # logging.log(level=logging.WARNING, msg="some one is trying to login into the system")
-        # logging.log(level=logging.ERROR, msg="some one is trying to login into the system")
         return super().get(request, *args, **kwargs)
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        return super().post(request, *args, **kwargs)
+        res = super().post(request, *args, **kwargs)
+        services.userLoginAction(self.get_form().get_user() or request.user )
+        return res
 
     def form_invalid(self, form):
         response = super().form_invalid(form)
-        print(form)
         return response
     
 class UserLogoutView(LogoutView):
-    pass
+
+    def post(self, request: WSGIRequest, *args: Any, **kwargs: Any) -> TemplateResponse:
+        services.userLogoutAction(request.user)
+        return super().post(request, *args, **kwargs)
 
 class SignUpForm(CreateView):
     template_name = "signup.html"

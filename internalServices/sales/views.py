@@ -19,7 +19,7 @@ from django.db.models import Q
 from .filters import FilterQuotes, SuperFilterQuotes
 from .sa import MyPaginator
 from django_filters.views import FilterView
-
+from actions import services
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -38,11 +38,13 @@ class excelUploader(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
              "quoteId": self.get_form().instance.id
         })
 
+    @transaction.atomic()
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
-         self.object = form.save(commit=False)
-         self.object.user = self.request.user
-         self.object = form.save()
-         return super().form_valid(form)
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object = form.save()
+        services.addQuoteAction(self.request.user, self.object)
+        return super().form_valid(form)
 
 class ReviewProducts(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin , TemplateView):
     template_name = 'convert_prods.html'
@@ -86,6 +88,7 @@ class CreateProducts(LoginRequiredMixin, PermissionRequiredMixin,
             context['table_data'] = df
             return self.render_to_response(context)
         else:
+            services.reviewQuoteAction(user=self.request.user, quote=quoteRequest)
             return redirect(reverse("detail-quote", kwargs={
                  "pk":quoteRequest.id
             }))
@@ -101,6 +104,10 @@ class AllQuotesView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             return QuoteRequest.objects.filter().order_by('-date_created', 'id')
         else:
             return QuoteRequest.objects.filter(user = self.request.user).order_by('-date_created', 'id')
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        services.handleQuotesAction(user=self.request.user)
+        return super().get(request, *args, **kwargs)
 
 class InProcessQuotesView(AllQuotesView):
     def get_queryset(self):
@@ -118,6 +125,7 @@ class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, OwnerShipTestMix
 
     def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
         quoteReq = get_object_or_404(QuoteRequest, pk = self.kwargs["pk"])
+        services.viewQuoteAction(user=self.request.user, quote=quoteReq)
         if not quoteReq.productsAdded:
               return redirect(reverse("reviewquote", kwargs={
                    "quoteId": self.kwargs["pk"]
@@ -149,6 +157,7 @@ class QuoteUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
         self.object = self.get_object()
         forms = self.get_forms()
         if all([val.is_valid() for val in forms.values()]):
+            services.editQuoteAction(user=self.request.user, quote=self.object)
             for form in forms.values():
                 form.save()
             return HttpResponseRedirect(self.get_success_url())
@@ -189,6 +198,7 @@ class staticDataView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestM
         quoteReq.static_data = self.object
         quoteReq.state = "quo"
         quoteReq.save()
+        services.addStaticAction(user=self.request.user, quote=quoteReq)
         return super().form_valid(form)
 
 class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, View):
@@ -199,6 +209,7 @@ class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTe
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         validate(quoteReq)
+        services.validateQuoteAction(user=self.request.user, quote=quoteReq)
         return redirect(self.get_success_url())
     
     def get_object(self):
@@ -218,6 +229,7 @@ class QuoteDraftenView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTes
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         draften(quoteReq)
+        services.draftenQuoteAction(user=self.request.user, quote=quoteReq)
         return redirect(self.get_success_url())
 
     def get_object(self):
@@ -335,6 +347,8 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
         else:
             return query.filter(user = self.request.user)
     def get(self, request, *args, **kwargs):
+        ####s
+        services.handleQuotesAction(user=self.request.user)
         try:
             self.paginate_by = request.GET["paginate"]
         except:

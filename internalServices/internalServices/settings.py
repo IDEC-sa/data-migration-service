@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'actions',
     'django_filters',
     'sales',
     'django_bootstrap_icons',
@@ -128,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Riyadh'
 
 USE_I18N = True
 
@@ -157,14 +158,26 @@ AUTH_USER_MODEL = 'users.User'
 LOGGING = {
     'version': 1,
     # The version number of our log
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     # django uses some of its own loggers for internal operations. In case you want to disable them just replace the False above with true.
     # A handler for WARNING. It is basically writing the WARNING messages into a file called WARNING.log
+        "formatters": {
+        "simple": {
+            "format": "[{levelname}] [{asctime}] [{message}]",
+            "style": "{",
+        },
+    },
     'handlers': {
         'file': {
-            'level': 'WARNING',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'warning.log',
+            'filename': BASE_DIR / 'warnings.log',
+            "formatter": "simple",
+        },
+        "console": {
+            "level": "WARNING",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
     # A logger for WARNING which has a handler called 'file'. A logger can have multiple handler
@@ -175,5 +188,16 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+         'actionsLogger': {
+        'handlers': ['file'],
+        'level': 'INFO',
     },
+    'root': {
+            'handlers': ['console'], #notice how file variable is called in handler which has been defined above
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        
+    },
+   
 }

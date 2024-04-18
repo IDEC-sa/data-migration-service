@@ -10,7 +10,7 @@ from datetime import datetime
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_init
 from django.db.models import Q
-
+from django.utils import timezone
 # Create your models here.
 User = settings.AUTH_USER_MODEL
 
@@ -103,7 +103,7 @@ class QuoteRequest(models.Model):
     excel = models.FileField(validators=[excel_validator])
     user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, blank = False)
     state = models.CharField(choices = states, max_length=4, default = "dra")
-    date_created = models.DateTimeField(blank = False, default=datetime.now)
+    date_created = models.DateTimeField(blank = False, default=timezone.now)
     discount = models.DecimalField(null = False, default = 0, 
                                    decimal_places=3, 
                                    max_digits=15,
