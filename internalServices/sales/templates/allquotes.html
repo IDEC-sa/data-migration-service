@@ -59,7 +59,7 @@
                     <td>{{ object.company.latin_name }}</td>
                     <td>{{ object.static_data.projectName }}</td>
                     <td>{{ object.static_data.quotationReference }}</td>
-                    <td>{{ object.date_created }}</td>
+                    <td>{{ object.date_created.astimezone }}</td>
                     <td><a class="btn btn-primary" href="{{ object.getSelfUrl }}">visit</a></td>
                     {% if not user.sysRole == "sman" or user.is_superuser %}
                     <th> {{ object.user }} </th>
