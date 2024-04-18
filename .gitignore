@@ -4,6 +4,7 @@
 *.env
 migrations
 # settings.py
+logs.log
 env
 *.pyc
 internalServices/warning.log

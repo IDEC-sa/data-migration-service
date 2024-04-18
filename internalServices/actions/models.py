@@ -39,4 +39,4 @@ class Action(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"[{self.date.astimezone()}] Actor: {self.actor} has  made the following: {self.get_type_display()} {f'on quote: {self.quote.serial}' if self.quote else ''}"
+        return f"Actor: {self.actor} has  made the following: {self.get_type_display()} {f'on quote: {self.quote.serial}' if self.quote else ''}"
