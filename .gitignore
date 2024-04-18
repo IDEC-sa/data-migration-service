@@ -3,7 +3,7 @@
 *.csv
 *.env
 migrations
-settings.py
+# settings.py
 env
 *.pyc
 internalServices/warning.log
