@@ -7,7 +7,6 @@ migrations
 logs.log
 env
 *.pyc
-internalServices/warning.log
 __pycache__
 !final_companies.xlsx
 !finalProds.xlsx
