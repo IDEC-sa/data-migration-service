@@ -61,7 +61,7 @@ MIDDLEWARE = [
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8687',
-    'http://192.168.100.37:8687'
+    f'http://{os.environ["IP"]}:8687'
 ]
 
 ROOT_URLCONF = 'internalServices.urls'
@@ -158,7 +158,7 @@ AUTH_USER_MODEL = 'users.User'
 LOGGING = {
     'version': 1,
     # The version number of our log
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     # django uses some of its own loggers for internal operations. In case you want to disable them just replace the False above with true.
     # A handler for WARNING. It is basically writing the WARNING messages into a file called WARNING.log
         "formatters": {
