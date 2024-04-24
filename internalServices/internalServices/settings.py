@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&m_fay)u45rhhm)2k#$%&_r7gu$=v01yw*g802h6mkfs%0@jht'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
@@ -34,6 +35,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'django_celery_beat',
     'dal',
     'dal_select2',
     'django.contrib.admin',
@@ -200,4 +202,28 @@ LOGGING = {
         
     },
    
+}
+
+
+# Celery Settings
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER",'redis://redis:6379/0')  # or your broker URL
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND",'redis://redis:6379/0')  # or your result backend
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Riyadh'  # or your timezone
+
+
+
+## celery beat settings
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_ROUTES = {
+ 'sales.tasks.my_task': {'queue': 'q1'},
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "sales.tasks.my_task",
+        "schedule": crontab(hour=20, minute=22),
+    },
 }

@@ -5,6 +5,7 @@
 migrations
 # settings.py
 logs.log
+
 env
 *.pyc
 __pycache__

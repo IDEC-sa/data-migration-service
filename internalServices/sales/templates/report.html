@@ -1,0 +1,31 @@
+{% extends "base_template.html"%}
+{% load df_conversions_tags %}
+{% block content %} 
+<div class=" mb-4">
+    <div class="header">
+        <h1>Choose report configurations</h1>
+    </div>
+    <form id="example-form1" method="post" >{% csrf_token %}
+        {% csrf_token %}
+        {{ form.as_p }}
+    <div>
+        <div align="center">
+            <input type="submit" class="button" value="Submit">
+        </div>
+    </div>
+    </form>
+</div>
+{% if report %}
+<div>
+<h1>Report</h1>
+{% if report %}
+    {% for line in report.qs %}
+        <h2>{{ line }}</h2>
+    {% endfor %}
+</div>      
+<div align="center">
+    <a href="{{ create_url }}"  class="button" value="Submit">Send via whatsapp</a>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

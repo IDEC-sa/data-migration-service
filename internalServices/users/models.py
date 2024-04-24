@@ -31,3 +31,5 @@ class User(AbstractUser):
                 salesmen.user_set.add(self)
                 salesmen.save()
 
+    def __str__(self) -> str:
+        return self.get_full_name()

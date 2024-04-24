@@ -13,7 +13,32 @@ services:
   depends_on:
     - myproject
   restart: "always"
+ redis:
+  ports:
+   - 6379:6379
+  image: redis:alpine
 
+ celery:
+  build: ./internalServices
+  command: celery -A internalServices worker -l info --concurrency 1 -Q q1
+  volumes:
+   - "./internalServices:/app"
+  env_file:
+   - .localenv
+  depends_on:
+   - redis
+   - db
+
+ celerybeat:
+  build: ./internalServices
+  command: celery -A internalServices beat -l info
+  volumes:
+   - "./internalServices:/app"
+  env_file:
+   - .localenv
+  depends_on:
+   - redis
+   - db
 
  myproject:
   hostname: internalServices

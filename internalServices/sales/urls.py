@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AddProducts, QuotesFilterView, GenerateCsvForQuote, AddCompanies, CompanyAutocomplete, ProductsView, excelUploader, QuoteDraftenView, QuoteValidateView, staticDataView, DashboardView, ReviewProducts, CreateProducts, QuoteUpdateView, AllQuotesView, InProcessQuotesView, QuoteDetailView, DraftQuotesView
+from .views import SendReportView, AddProducts, CreateReportView, QuotesFilterView, GenerateCsvForQuote, AddCompanies, CompanyAutocomplete, ProductsView, excelUploader, QuoteDraftenView, QuoteValidateView, staticDataView, DashboardView, ReviewProducts, CreateProducts, QuoteUpdateView, AllQuotesView, InProcessQuotesView, QuoteDetailView, DraftQuotesView
 urlpatterns = [
     path("dashboard/", DashboardView.as_view(), name="sales-dashboard"), 
     path("products/add/",AddProducts.as_view(), name="add-products" ),
@@ -20,4 +20,6 @@ urlpatterns = [
     path("quotes/all-adv/", QuotesFilterView.as_view(), name = "advanced-quotes"),
     path('company-autocomplete/', CompanyAutocomplete.as_view(), name='company-autocomplete',
     ),
+    path("create-report", CreateReportView.as_view(), name='create-report'),
+    path("send-report/<int:pk>", SendReportView.as_view(), name='send-report')
 ]

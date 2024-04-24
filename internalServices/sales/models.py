@@ -206,3 +206,8 @@ class Serial(models.Model):
             qsSerial, cr = Serial.objects.get_or_create(prefix="quo-", postfix="/2023")
             print(f"created is {cr}")
             instance.serial = qsSerial.getNext()
+
+
+class Report(models.Model):
+    qs = models.TextField(null=False, blank=False)
+    date_created = models.DateTimeField(blank = False, default=timezone.now)

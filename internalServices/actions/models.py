@@ -29,9 +29,9 @@ class Action(models.Model):
         "srch":_("search")
     }
 
-    actor = models.ForeignKey(User, null=False, blank=False, on_delete = models.DO_NOTHING)
+    actor = models.ForeignKey(User, null=False, blank=False, on_delete = models.CASCADE)
     type = models.CharField(choices = types, max_length=4, default = "dra")
-    quote = models.ForeignKey(QuoteRequest, null=True, blank=True, on_delete=models.DO_NOTHING)
+    quote = models.ForeignKey(QuoteRequest, null=True, blank=True, on_delete=models.CASCADE, related_name = "actions")
     date = models.DateTimeField(blank=False, null=False, editable=False, default=timezone.now)
 
     def save(self, *args, **kwargs):

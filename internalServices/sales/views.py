@@ -4,11 +4,11 @@ from django.forms import BaseModelForm
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import View, TemplateView, FormView, CreateView, UpdateView, ListView, DetailView
-from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm
+from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm, ReportForm
 import io
 from django.urls import reverse
-from .services import generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
-from .models import QuoteRequest, Product, Company, StaticData
+from .services import toMessage, sendWhatsappReport, generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
+from .models import Report, QuoteRequest, Product, Company, StaticData
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .permissions import OwnerShipTestMixin, SuperUserPermissionMixin, SalesDirectoryPermissionMixin, OwnerPermissionMixin
@@ -16,10 +16,16 @@ from django.db import transaction
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from dal import autocomplete
 from django.db.models import Q
+from django.db.models import Count
 from .filters import FilterQuotes, SuperFilterQuotes
 from .sa import MyPaginator
 from django_filters.views import FilterView
-from actions import services
+from actions import services as actionServices
+from django.conf import settings
+from django.db.models import F
+from django.contrib.auth import get_user_model
+from .tasks import my_task
+User = get_user_model()
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -43,7 +49,7 @@ class excelUploader(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object = form.save()
-        services.addQuoteAction(self.request.user, self.object)
+        actionServices.addQuoteAction(self.request.user, self.object)
         return super().form_valid(form)
 
 class ReviewProducts(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin , TemplateView):
@@ -88,7 +94,7 @@ class CreateProducts(LoginRequiredMixin, PermissionRequiredMixin,
             context['table_data'] = df
             return self.render_to_response(context)
         else:
-            services.reviewQuoteAction(user=self.request.user, quote=quoteRequest)
+            actionServices.reviewQuoteAction(user=self.request.user, quote=quoteRequest)
             return redirect(reverse("detail-quote", kwargs={
                  "pk":quoteRequest.id
             }))
@@ -106,7 +112,8 @@ class AllQuotesView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             return QuoteRequest.objects.filter(user = self.request.user).order_by('-date_created', 'id')
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        services.handleQuotesAction(user=self.request.user)
+
+        actionServices.handleQuotesAction(user=self.request.user)
         return super().get(request, *args, **kwargs)
 
 class InProcessQuotesView(AllQuotesView):
@@ -122,10 +129,17 @@ class QuoteDetailView(LoginRequiredMixin, OwnerPermissionMixin, OwnerShipTestMix
     model = QuoteRequest
     template_name = "quote.html"
     permission_required = ["sales.view_quoterequest"]
+#Transaction.objects.all().values('actor').annotate(total=Count('actor')).order_by('total')
 
     def get(self, request: HttpRequest, *args: str, **kwargs: io) -> HttpResponse:
         quoteReq = get_object_or_404(QuoteRequest, pk = self.kwargs["pk"])
-        services.viewQuoteAction(user=self.request.user, quote=quoteReq)
+        actionServices.viewQuoteAction(user=self.request.user, quote=quoteReq)
+        q = QuoteRequest.objects.select_related('user').all()
+        print(q)
+        print(q.query)
+        s = q.annotate(email=F('user__email')).values('email').annotate(total=Count('email'))
+        print(s)
+        print(s.query)
         if not quoteReq.productsAdded:
               return redirect(reverse("reviewquote", kwargs={
                    "quoteId": self.kwargs["pk"]
@@ -157,7 +171,7 @@ class QuoteUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
         self.object = self.get_object()
         forms = self.get_forms()
         if all([val.is_valid() for val in forms.values()]):
-            services.editQuoteAction(user=self.request.user, quote=self.object)
+            actionServices.editQuoteAction(user=self.request.user, quote=self.object)
             for form in forms.values():
                 form.save()
             return HttpResponseRedirect(self.get_success_url())
@@ -198,7 +212,7 @@ class staticDataView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestM
         quoteReq.static_data = self.object
         quoteReq.state = "quo"
         quoteReq.save()
-        services.addStaticAction(user=self.request.user, quote=quoteReq)
+        actionServices.addStaticAction(user=self.request.user, quote=quoteReq)
         return super().form_valid(form)
 
 class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTestMixin, View):
@@ -209,7 +223,7 @@ class QuoteValidateView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTe
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         validate(quoteReq)
-        services.validateQuoteAction(user=self.request.user, quote=quoteReq)
+        actionServices.validateQuoteAction(user=self.request.user, quote=quoteReq)
         return redirect(self.get_success_url())
     
     def get_object(self):
@@ -229,7 +243,7 @@ class QuoteDraftenView(LoginRequiredMixin, PermissionRequiredMixin, OwnerShipTes
     def get(self, request: HttpRequest, *args: io, **kwargs: io) -> HttpResponse:
         quoteReq = self.get_object()
         draften(quoteReq)
-        services.draftenQuoteAction(user=self.request.user, quote=quoteReq)
+        actionServices.draftenQuoteAction(user=self.request.user, quote=quoteReq)
         return redirect(self.get_success_url())
 
     def get_object(self):
@@ -348,7 +362,7 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             return query.filter(user = self.request.user)
     def get(self, request, *args, **kwargs):
         ####s
-        services.handleQuotesAction(user=self.request.user)
+        actionServices.handleQuotesAction(user=self.request.user)
         try:
             self.paginate_by = request.GET["paginate"]
         except:
@@ -362,3 +376,51 @@ class QuotesFilterView(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             return SuperFilterQuotes
         else:
             return FilterQuotes
+        
+
+from django.utils.http import urlencode
+
+class CreateReportView(FormView):
+    template_name = "report.html"
+    form_class = ReportForm
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if len(self.request.GET):
+            self.initial = self.request.GET.dict()
+            print(self.initial)
+            p = self.initial.pop('salesmen', [])
+            print(p)
+            p = eval(f"{p}")
+            q = QuoteRequest.objects.select_related('user')\
+            .filter(user__sysRole='sman').filter(Q(date_created__gte=self.request.GET.get('start_date')) &
+                                                 Q(date_created__lte=self.request.GET.get('end_date'))  &
+                                                 Q(user__id__in=p))
+            s = q.annotate(username=F('user__first_name'), email=F('user__email')).values('email', 'username').annotate(total=Count('email'))
+            print(s)
+            msg = toMessage(self.initial, s)
+            re = Report(qs=msg)
+            re.save()
+            self.extra_context = {"report":re}
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        base_url = reverse("create-report")
+        if self.query_kwargs:
+            base_url = reverse("create-report")
+            base_url = '{}?{}'.format(base_url, urlencode(self.query_kwargs))
+        return base_url
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        form = self.get_form()
+        if form.is_valid():
+            self.query_kwargs = form.cleaned_data
+            self.query_kwargs['salesmen'] = (list(form.cleaned_data['salesmen'].values_list('id', flat=True)))
+            print("type")
+        return super().post(request, *args, **kwargs)
+
+#        my_task.delay(["sayed", "azp"])
+
+class SendReportView(View):
+    def get(self, request, *args, **kwargs):
+        print('send message')
+        return redirect(reverse('sales-dashboard'))

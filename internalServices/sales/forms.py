@@ -8,6 +8,9 @@ from django.core.validators import FileExtensionValidator, BaseValidator
 from django.core import exceptions
 from dal import autocomplete
 from datetime import date
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 ext_validator = FileExtensionValidator(['xlsx'], message="Please select a valid excel file")
 pdf_validator = FileExtensionValidator(['pdf'], message="Please select a valid pdf file")
@@ -108,3 +111,18 @@ class CompaniesForm(forms.Form):
     def header(self):
         return "Add Companies to the db"
 
+class ReportForm(forms.Form):
+    start_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
+        initial= timezone.datetime.now().date()
+    )
+    end_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
+        initial= timezone.datetime.now().date()
+    )
+
+    salesmen = forms.ModelMultipleChoiceField(queryset=User.objects.filter(sysRole='sman'))
