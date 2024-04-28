@@ -49,8 +49,6 @@ services:
   expose: 
    - 8000
   restart: "always"
-  env_file:
-   - .localenv
   volumes:
    - "./internalServices:/app"
    - static_volume:/app/root
