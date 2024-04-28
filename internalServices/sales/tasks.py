@@ -29,6 +29,7 @@ def my_task(message=[], sched=0):
     options = Options()
     #put the profile data in docker volume
     options.add_argument(f"user-data-dir={str(os.getcwd())}/chromedir")
+    print(str(os.getcwd()))
     options.add_argument("--headless")
     prefs = {"download.default_directory": "."}
     options.add_experimental_option("prefs", prefs)
@@ -44,9 +45,11 @@ def my_task(message=[], sched=0):
     driver_ua = browser.execute_script("return navigator.userAgent")
     print("User agent:")
     print(driver_ua)
-    try:
+    try: 
         wait = WebDriverWait(browser, 30)  # Adjust the timeout value as needed (e.g., 60 seconds)
+        print("browser started")
         wait.until(EC.presence_of_element_located((By.XPATH, f"//span[./text()='{name}']")))
+        print("session loaded")
         sxpath = browser.find_element("xpath", f"//span[./text()='{name}']")
         action = webdriver.common.action_chains.ActionChains(browser)
         action.move_to_element_with_offset(sxpath, 0, 0)

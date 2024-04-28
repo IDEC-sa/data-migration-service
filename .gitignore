@@ -6,6 +6,7 @@ migrations
 # settings.py
 logs.log
 chromedir
+google-chrome-stable_current_amd64.deb
 
 env
 *.pyc

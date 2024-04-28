@@ -17,6 +17,9 @@ RUN pip install -r requirements.txt
 # copy app folder
 COPY ./root $APP_HOME/root
 COPY ./root $APP_HOME/mediafiles
+RUN apt-get update && apt-get install -y wget && apt-get install -y zip
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN apt-get install -y ./google-chrome-stable_current_amd64.deb
 
 # run python command
 # RUN python $APP_HOME/manage.py makemigrations
