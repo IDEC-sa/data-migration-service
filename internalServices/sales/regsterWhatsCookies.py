@@ -58,12 +58,21 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')))
     inp_xpath = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')
     input_box = WebDriverWait(browser, 60).until(expected_conditions.presence_of_element_located((By.XPATH, inp_xpath)))
+    
     for line in message:
         input_box.send_keys(line)
         input_box.send_keys(Keys.SHIFT, Keys.ENTER)
+    time.sleep(0)
+    conds = {'latency': 0, 'throughput': 5000, 'offline': True}
+    browser.set_network_conditions(**conds)
     input_box.send_keys(Keys.ENTER)
-    time.sleep(15)
-    
+    ele_xpath = f"//span[@aria-label=' Pending ']"
+    ele = wait.until(EC.presence_of_element_located((By.XPATH, ele_xpath)))
+    conds['offline'] = False
+    browser.set_network_conditions(**conds)
+    print(browser.get_network_conditions())
+    wait.until(EC.invisibility_of_element(ele))
+    print("message was sent")
 except Exception as e:
     print(e)
     print("The above error happened while sending the message")

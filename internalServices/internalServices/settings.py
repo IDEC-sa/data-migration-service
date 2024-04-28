@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from celery.schedules import crontab
+import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -224,6 +225,10 @@ CELERY_ROUTES = {
 CELERY_BEAT_SCHEDULE = {
     "sample_task": {
         "task": "sales.tasks.my_task",
-        "schedule": crontab(hour=20, minute=22),
+        # "schedule": crontab(minute="*/1"),
+        "schedule": crontab(hour=17),
+        "kwargs": {
+            'sched': True
+        },
     },
 }

@@ -13,9 +13,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 import os
 from django.conf import settings
+from .services import salesReport
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 
 @shared_task(queue="q1")
-def my_task(message=[]):
+def my_task(message=[], sched=0):
+    if sched:
+        print("scheduled")
+        message = salesReport().qs
+        message.append('------------------------------------------------------------')
+        message.append('This is a scheduled message sent daily at this time to review the progress of the data migration')
     my_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
     options = Options()
     #put the profile data in docker volume
@@ -46,16 +55,24 @@ def my_task(message=[]):
         wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')))
         inp_xpath = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')
         input_box = WebDriverWait(browser, 60).until(expected_conditions.presence_of_element_located((By.XPATH, inp_xpath)))
+        
         for line in message:
             input_box.send_keys(line)
             input_box.send_keys(Keys.SHIFT, Keys.ENTER)
+        time.sleep(0)
+        conds = {'latency': 0, 'throughput': 5000, 'offline': True}
+        browser.set_network_conditions(**conds)
         input_box.send_keys(Keys.ENTER)
-        time.sleep(5)
-
+        ele_xpath = f"//span[@aria-label=' Pending ']"
+        ele = wait.until(EC.presence_of_element_located((By.XPATH, ele_xpath)))
+        conds['offline'] = False
+        browser.set_network_conditions(**conds)
+        print(browser.get_network_conditions())
+        wait.until(EC.invisibility_of_element(ele))
+        print("message was sent")
     except Exception as e:
         print(e)
         print("The above error happened while sending the message")
     finally:
-        print("ended message")
         browser.quit()
     return

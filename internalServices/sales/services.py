@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import django.core.exceptions as excep
-from .models import QuoteRequest, Product, ProductLine, ProductList, Company
+from .models import QuoteRequest,Report, Product, ProductLine, ProductList, Company
 from django.db import transaction
 from django.core import exceptions
 ### whatsapp ###
@@ -20,6 +20,10 @@ from selenium.webdriver import ActionChains
 import os
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import Q, Count, F, IntegerField, Value
+from django.contrib.auth import get_user_model
+from itertools import chain
+User = get_user_model()
 
 ######
 def convert_ranged(start_r, num_rows, columns_list, df):
@@ -229,10 +233,18 @@ def sendWhatsappReport(message):
         wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')))
         inp_xpath = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div/p')
         input_box = WebDriverWait(browser, 60).until(expected_conditions.presence_of_element_located((By.XPATH, inp_xpath)))
-        input_box.send_keys(message)
+        for line in message:
+            input_box.send_keys(line)
+            input_box.send_keys(Keys.SHIFT, Keys.ENTER)
+        conds = {'latency': 0, 'throughput': 5000, 'offline': True}
+        browser.set_network_conditions(**conds)
         input_box.send_keys(Keys.ENTER)
-        time.sleep(10)
-        
+        ele_xpath = f"//span[@aria-label=' Pending ']"
+        ele = wait.until(EC.presence_of_element_located((By.XPATH, ele_xpath)))
+        conds['offline'] = False
+        browser.set_network_conditions(**conds)
+        wait.until(EC.invisibility_of_element(ele))
+        print("message was sent")
     except Exception as e:
         print(e)
         print("The above error happened while sending the message")
@@ -240,11 +252,45 @@ def sendWhatsappReport(message):
         browser.quit()
 
 
-def toMessage(filters, query):
+def toMessage(filters, query, **kwargs):
     msg = [f"This is a generated report of the odoo data migration service created at {timezone.now().date()}"]
-    for filter_n, filter_v in filters.items():
-        msg.append(f"{filter_n}:  {filter_v}")
-    
+    if filters:
+        for filter_n, filter_v in filters.items():
+            msg.append(f"{filter_n}:  {filter_v}")
+        
     for result in query:
-        msg.append(f"Salesman email: {result['email']}: Number of created quotations: {result['total']}")
+        print(result)
+        msg.append(f"Salesman name: {result['firstname'] + ' ' + result['lastname']}: Number of created quotations: {result['total']}")
     return msg
+
+
+def salesReport(**kwargs):
+    q = QuoteRequest.objects.select_related('user')\
+            .filter(user__sysRole='sman').filter(Q(date_created__gte=kwargs.get('start_date', timezone.datetime(1990, 1, 1))) &
+                                                 Q(date_created__lte=kwargs.get('end_date', timezone.now())))
+    chosenUsers = User.objects.filter(sysRole="sman")
+    if kwargs.get('users'):
+        chosenUsers = User.objects.filter(id__in=kwargs.get('users'))
+        q = q.filter(user__id__in=kwargs.get('users'))     
+    s = q.annotate(firstname=F('user__first_name'), lastname=F('user__last_name'), email=F('user__email')).values('email', 'firstname', 'lastname').annotate(total=Count('email'))
+    sentUsers = dict(s.values_list('user__id', 'total'))
+    sentUsersSet = sentUsers.keys()
+    print(dict(User.objects.filter(sysRole='sman').values_list('id', 'username')).keys())
+    if kwargs.get('users'):
+        chosenUsers = set(kwargs.get('users')) 
+    else:
+        chosenUsers = set(dict(User.objects.filter(sysRole='sman').values_list('id', 'username')).keys())
+    diff = chosenUsers.difference(sentUsersSet)
+    print(diff)
+    print("different")
+    print(s)
+    q2 = User.objects.filter(Q(id__in=list(diff)))\
+            .annotate(total=Value(0, output_field=IntegerField()), 
+                      firstname=F('first_name'),
+                        lastname=F('last_name'))\
+                            .values('email','firstname', 'lastname', 'total')
+    print(list(chain(s, q2)))
+    msg =toMessage(filters=kwargs.get('filters', None), query=list(chain(s, q2)))
+    re = Report(qs=msg)
+    re.save()
+    return re

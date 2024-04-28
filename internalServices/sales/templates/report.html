@@ -24,7 +24,7 @@
     {% endfor %}
 </div>      
 <div align="center">
-    <a href="{{ create_url }}"  class="button" value="Submit">Send via whatsapp</a>
+    <a href="{% url 'send-report' report.pk %}"  class="button" value="Submit">Send via whatsapp</a>
 </div>
 {% endif %}
 {% endif %}

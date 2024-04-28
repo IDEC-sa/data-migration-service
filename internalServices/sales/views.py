@@ -7,7 +7,7 @@ from django.views.generic import View, TemplateView, FormView, CreateView, Updat
 from .forms import UploadForm, StaticDataForm, ProductsForm, CompaniesForm, ReportForm
 import io
 from django.urls import reverse
-from .services import toMessage, sendWhatsappReport, generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
+from .services import salesReport, toMessage, sendWhatsappReport, generateCsv, convert_xlsx, create_comps, createProdsFromQuoteRequest, validate, draften, create_prods
 from .models import Report, QuoteRequest, Product, Company, StaticData
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -25,6 +25,7 @@ from django.conf import settings
 from django.db.models import F
 from django.contrib.auth import get_user_model
 from .tasks import my_task
+from django.utils import timezone
 User = get_user_model()
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -389,17 +390,15 @@ class CreateReportView(FormView):
             self.initial = self.request.GET.dict()
             print(self.initial)
             p = self.initial.pop('salesmen', [])
-            print(p)
             p = eval(f"{p}")
-            q = QuoteRequest.objects.select_related('user')\
-            .filter(user__sysRole='sman').filter(Q(date_created__gte=self.request.GET.get('start_date')) &
-                                                 Q(date_created__lte=self.request.GET.get('end_date'))  &
-                                                 Q(user__id__in=p))
-            s = q.annotate(username=F('user__first_name'), email=F('user__email')).values('email', 'username').annotate(total=Count('email'))
-            print(s)
-            msg = toMessage(self.initial, s)
-            re = Report(qs=msg)
-            re.save()
+            users = User.objects.filter(sysRole='sman')
+            print(QuoteRequest.objects.filter(Q(date_created__gte=timezone.datetime(1990, 1, 1)) &
+                                                 Q(date_created__lte=timezone.now())  &
+                                                 Q(user__id__in=users)))
+
+            re = salesReport(start_date = self.request.GET.get('start_date'),
+                         end_date=self.request.GET.get('end_date'),
+                           users=p, filters=self.initial)
             self.extra_context = {"report":re}
         return super().get(request, *args, **kwargs)
 
@@ -418,9 +417,10 @@ class CreateReportView(FormView):
             print("type")
         return super().post(request, *args, **kwargs)
 
-#        my_task.delay(["sayed", "azp"])
-
 class SendReportView(View):
     def get(self, request, *args, **kwargs):
-        print('send message')
+        re = get_object_or_404(Report, pk=self.kwargs['pk'])
+        l = eval(f"{re.qs}")
+        print(l)
+        my_task.delay(message=l)
         return redirect(reverse('sales-dashboard'))
