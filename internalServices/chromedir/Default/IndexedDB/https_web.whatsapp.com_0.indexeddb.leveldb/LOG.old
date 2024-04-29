@@ -1,0 +1,31 @@
+2024/04/29-13:22:41.302 115b7 Reusing MANIFEST /home/dexter/data-migration-service/internalServices/chromedir/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/04/29-13:22:41.303 115b7 Recovering log #39
+2024/04/29-13:22:41.406 115b7 Reusing old log /home/dexter/data-migration-service/internalServices/chromedir/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000039.log 
+2024/04/29-13:22:41.415 115ac Level-0 table #45: started
+2024/04/29-13:22:41.444 115ac Level-0 table #45: 1127184 bytes OK
+2024/04/29-13:22:41.447 115ac Delete type=0 #39
+2024/04/29-13:22:41.450 115ac Manual compaction at level-0 from '\x00\x1a\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1b\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/04/29-13:22:42.090 115ab Level-0 table #47: started
+2024/04/29-13:22:42.092 115ab Level-0 table #47: 1742 bytes OK
+2024/04/29-13:22:42.093 115ab Delete type=0 #44
+2024/04/29-13:22:42.096 115ab Manual compaction at level-0 from '\x00\x1b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1c\x00\x00\x00' @ 0 : 0; will stop at '\x00\x1b\x00\x00\x05' @ 75287 : 1
+2024/04/29-13:22:42.096 115ab Compacting 1@0 + 1@1 files
+2024/04/29-13:22:42.148 115ab Generated table #48@0: 20222 keys, 721842 bytes
+2024/04/29-13:22:42.149 115ab Compacted 1@0 + 1@1 files => 721842 bytes
+2024/04/29-13:22:42.156 115ab compacted to: files[ 0 1 1 0 0 0 0 ]
+2024/04/29-13:22:42.156 115ab Delete type=2 #47
+2024/04/29-13:22:42.157 115b7 Manual compaction at level-0 from '\x00\x1b\x00\x00\x05' @ 75287 : 1 .. '\x00\x1c\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/04/29-13:22:43.796 115ac Compacting 1@1 + 1@2 files
+2024/04/29-13:22:43.835 115ac Generated table #49@1: 16473 keys, 896027 bytes
+2024/04/29-13:22:43.835 115ac Compacted 1@1 + 1@2 files => 896027 bytes
+2024/04/29-13:22:43.837 115ac compacted to: files[ 0 0 1 0 0 0 0 ]
+2024/04/29-13:22:43.837 115ac Delete type=2 #45
+2024/04/29-13:22:51.963 115ab Level-0 table #51: started
+2024/04/29-13:22:51.999 115ab Level-0 table #51: 1004308 bytes OK
+2024/04/29-13:22:52.000 115ab Delete type=2 #42
+2024/04/29-13:22:52.000 115ab Delete type=2 #48
+2024/04/29-13:22:52.000 115ab Delete type=0 #46
+2024/04/29-13:22:52.017 115ac Compacting 1@1 + 1@2 files
+2024/04/29-13:22:52.081 115ac Generated table #52@1: 28397 keys, 1382111 bytes
+2024/04/29-13:22:52.082 115ac Compacted 1@1 + 1@2 files => 1382111 bytes
+2024/04/29-13:22:52.084 115ac compacted to: files[ 0 0 1 0 0 0 0 ]

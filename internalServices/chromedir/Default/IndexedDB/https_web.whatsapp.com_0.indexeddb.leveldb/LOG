@@ -1,0 +1,15 @@
+2024/04/29-13:23:18.512 11711 Reusing MANIFEST /home/dexter/data-migration-service/internalServices/chromedir/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/04/29-13:23:18.513 11711 Recovering log #50
+2024/04/29-13:23:18.657 11711 Reusing old log /home/dexter/data-migration-service/internalServices/chromedir/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000050.log 
+2024/04/29-13:23:18.657 11711 Delete type=2 #49
+2024/04/29-13:23:18.657 11711 Delete type=2 #51
+2024/04/29-13:23:19.300 11711 Level-0 table #55: started
+2024/04/29-13:23:19.323 11711 Level-0 table #55: 721272 bytes OK
+2024/04/29-13:23:19.326 11711 Delete type=0 #50
+2024/04/29-13:23:19.328 11711 Manual compaction at level-0 from '\x00\x1c\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1d\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/04/29-13:23:20.992 11712 Compacting 1@1 + 1@2 files
+2024/04/29-13:23:21.070 11712 Generated table #56@1: 38820 keys, 1697383 bytes
+2024/04/29-13:23:21.070 11712 Compacted 1@1 + 1@2 files => 1697383 bytes
+2024/04/29-13:23:21.071 11712 compacted to: files[ 0 0 1 0 0 0 0 ]
+2024/04/29-13:23:21.071 11712 Delete type=2 #55
+2024/04/29-13:23:21.072 11712 Delete type=2 #52
