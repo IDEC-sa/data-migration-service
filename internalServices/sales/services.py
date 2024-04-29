@@ -273,7 +273,7 @@ def salesReport(**kwargs):
         chosenUsers = User.objects.filter(id__in=kwargs.get('users'))
         q = q.filter(user__id__in=kwargs.get('users'))     
     s = q.annotate(firstname=F('user__first_name'), lastname=F('user__last_name'), email=F('user__email')).values('email', 'firstname', 'lastname').annotate(total=Count('email'))\
-    .order_by('total')
+    .order_by('-total')
     sentUsers = dict(s.values_list('user__id', 'total'))
     sentUsersSet = sentUsers.keys()
     if kwargs.get('users'):
