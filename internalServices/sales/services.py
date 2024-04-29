@@ -272,24 +272,21 @@ def salesReport(**kwargs):
     if kwargs.get('users'):
         chosenUsers = User.objects.filter(id__in=kwargs.get('users'))
         q = q.filter(user__id__in=kwargs.get('users'))     
-    s = q.annotate(firstname=F('user__first_name'), lastname=F('user__last_name'), email=F('user__email')).values('email', 'firstname', 'lastname').annotate(total=Count('email'))
+    s = q.annotate(firstname=F('user__first_name'), lastname=F('user__last_name'), email=F('user__email')).values('email', 'firstname', 'lastname').annotate(total=Count('email'))\
+    .order_by('total')
     sentUsers = dict(s.values_list('user__id', 'total'))
     sentUsersSet = sentUsers.keys()
-    print(dict(User.objects.filter(sysRole='sman').values_list('id', 'username')).keys())
     if kwargs.get('users'):
         chosenUsers = set(kwargs.get('users')) 
     else:
         chosenUsers = set(dict(User.objects.filter(sysRole='sman').values_list('id', 'username')).keys())
     diff = chosenUsers.difference(sentUsersSet)
-    print(diff)
-    print("different")
-    print(s)
+
     q2 = User.objects.filter(Q(id__in=list(diff)))\
             .annotate(total=Value(0, output_field=IntegerField()), 
                       firstname=F('first_name'),
                         lastname=F('last_name'))\
                             .values('email','firstname', 'lastname', 'total')
-    print(list(chain(s, q2)))
     msg =toMessage(filters=kwargs.get('filters', None), query=list(chain(s, q2)))
     re = Report(qs=msg)
     re.save()
