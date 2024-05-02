@@ -161,6 +161,7 @@ class QuoteRequest(models.Model):
         return user == self .user
 
 class Product(models.Model):
+    search_fields = ('internalCode', 'Name', 'odooRef')
     name = models.TextField(null = False, blank = False, error_messages ={
                     "null":"The line item field is not valid",
                     })
@@ -170,6 +171,8 @@ class Product(models.Model):
     odooRef = models.TextField(null = False, blank = False, unique = True, error_messages ={
                     "null":"The line item field is not valid",
                     })
+    def __str__(self) -> str:
+        return f"[{self.internalCode}] {self.name} {self.odooRef}"
 
 class ProductList(models.Model):
     quoteRequest = models.OneToOneField(QuoteRequest, on_delete = models.CASCADE, related_name = "productList")
