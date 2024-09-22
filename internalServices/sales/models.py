@@ -24,6 +24,8 @@ zeroPositiveValidator = MinValueValidator(0, "Negative values are not allowed")
 #     Serial = models.ForeignKey(Serial, on_delete=models.DO_NOTHING)
 
 class Company(models.Model):
+    search_fields = ('arabic_name', 'code', 'latin_name')
+
     arabic_name = models.CharField(blank = False, null = False, max_length = 200)
     latin_name = models.CharField(blank = False, null = False, max_length = 200)
     code = models.CharField(blank = False, null = False, max_length = 200)
